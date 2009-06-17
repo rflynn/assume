@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 PassCnt=0
 FailCnt=0
@@ -22,9 +22,9 @@ test_lex() {
     PassCnt=$((PassCnt+1))
   else
     echo "Test $id failed:"
-    echo -e "INPUT\n$input\n"
-    echo -e "EXPECT\n$expect\n"
-    echo -e "RESULT\n$result\n\n"
+    echo -e "INPUT\n$input"
+    echo -e "EXPECT\n$expect"
+    echo -e "RESULT\n$result\n"
     FailCnt=$((FailCnt+1))
   fi
 }
