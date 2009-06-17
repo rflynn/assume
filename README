@@ -1,6 +1,13 @@
 
+   __      ____    ____  __  __    ___ ___      __   
+ /'__`\   /',__\  /',__\/\ \/\ \ /' __` __`\  /'__`\ 
+/\ \L\.\_/\__, `\/\__, `\ \ \_\ \/\ \/\ \/\ \/\  __/ 
+\ \__/.\_\/\____/\/\____/\ \____/\ \_\ \_\ \_\ \____\
+ \/__/\/_/\/___/  \/___/  \/___/  \/_/\/_/\/_/\/____/
+                                                     
+
 "When you ASSUME you make an ASS out of U and ME"
 
-An attempt at a whitelist-style static analyzer for C code.
+An attempt at a different kind of static analyzer for C code.
 Not close to functional.
 
