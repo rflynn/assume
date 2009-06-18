@@ -1,13 +1,42 @@
-
    __      ____    ____  __  __    ___ ___      __   
  /'__`\   /',__\  /',__\/\ \/\ \ /' __` __`\  /'__`\ 
 /\ \L\.\_/\__, `\/\__, `\ \ \_\ \/\ \/\ \/\ \/\  __/ 
 \ \__/.\_\/\____/\/\____/\ \____/\ \_\ \_\ \_\ \____\
  \/__/\/_/\/___/  \/___/  \/___/  \/_/\/_/\/_/\/____/
                                                      
-
 "When you ASSUME you make an ASS out of U and ME"
 
-An attempt at a different kind of static analyzer for C code.
+explore code as data.
+hopefully write static analysis tool.
+want to explore C source via HLL (Ocaml)
+
 Not close to functional.
+
+In the meantime, here is some reading material:
+
+* http://c2xml.sourceforge.net/
+  This is a straight-forward tool and a really good idea.
+  Parsing C isn't easy.
+
+* http://splint.org/
+  Modern UNIX "lint"; infamous for its copious output.
+  Ironically, it's written in C(!) What were they thinking?
+
+* http://mtc.epfl.ch/software-tools/blast/
+  BLAST a static analyzer from Berkely. Haven't figured out
+  what it does yet.
+
+* http://www.kernel.org/pub/software/devel/sparse/
+  Tool written by Linus Torvalds to find common bugs in
+  Linux kernel drivers.
+
+* http://en.wikipedia.org/wiki/Static_code_analysis
+  "It has been proven that, barring some hypothesis that the
+  state space of programs is finite and small, finding all
+  possible run-time errors, or more generally any kind of
+  violation of a specification on the final result of a
+  program, is undecidable: there is no mechanical method that
+  can always answer truthfully whether a given program may or
+  may not exhibit runtime errors." -- that's what keeps we
+  programmers in business baby!
 
