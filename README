@@ -14,6 +14,9 @@ Not close to functional.
 
 In the meantime, here is some reading material:
 
+* http://plus.kaist.ac.kr/~shoh/ocaml/ocamllex-ocamlyacc/ocamllex-tutorial/ocamllex-tutorial.html
+  Ocamllex tutorial
+
 * http://c2xml.sourceforge.net/
   This is a straight-forward tool and a really good idea.
   Parsing C isn't easy.
