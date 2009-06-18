@@ -1,7 +1,10 @@
 (* ex: set ts=2 et: *)
 (* Parser for C Programming Language, standard ISO 9899 *)
 (* References
-  #1 ISO/IEC 9899:1999(E)
+  #1 ISO/IEC International 9899 STANDARD
+     Second Edition 1999-12-01
+     Programming Languages -- C
+     9899:1999(E)
 *)
 
 {
@@ -51,14 +54,11 @@ let hexadecimal_fractional_constant
                                     | hexadecimal_digit_sequence '.')
 let fractional_constant           = (digit_sequence? '.' digit_sequence
                                     | digit_sequence '.')
-let hexadecimal_floating_constant = ( hexadecimal_prefix hexadecimal_fractional_constant
-                                      binary_exponent_part floating_suffix?
-                                    | hexadecimal_prefix hexadecimal_digit_sequence
-                                      binary_exponent_part floating_suffix?)
-let decimal_floating_constant
-                                  = (fractional_constant exponent_part? floating_suffix?
+let hexadecimal_floating_constant = (hexadecimal_prefix hexadecimal_fractional_constant binary_exponent_part floating_suffix?
+                                    | hexadecimal_prefix hexadecimal_digit_sequence binary_exponent_part floating_suffix?)
+let decimal_floating_constant     = (fractional_constant exponent_part? floating_suffix?
                                     | digit_sequence exponent_part floating_suffix?)
-let floating_constant             = decimal_floating_constant | hexadecimal_floating_constant
+let floating_constant             = (decimal_floating_constant | hexadecimal_floating_constant)
 
 (* Ref #1 S6.4.4.4 Character constants *)
 let simple_escape_sequence        = ('\\' ['\'' '"' '?' '\\' 'a' 'b' 'f' 'n' 'r' 't' 'v'])
@@ -89,25 +89,41 @@ let punctuator                    = ( "["   | "]"   | "("  | ")"  | "{"  | "}" |
 (* Ref #1 S6.4.7 Header names *)
 let header_name                   = ( '<' [^ '>' '\n']+ '>'
                                     | '"' [^ '"' '\n']+ '"')
+(* Ref #1 S6.4.8 Processing numbers *)
+(* WTF are processing numbers anyways? *)
+let pp_number                     = '.'? digit+ nondigit* (['e' 'E' 'p' 'P'] sign)?
+
+(* Ref #1 S6.4.9 Comments *)
+let multiline_comment             = "/*" _* "*/"
+(* NOTE: comment sequences may be split in half by a '\' '\n' sequence; and
+ * and comment ending with said sequence continues to the next line *)
+let cplusplus_comment             = (("//" | '/' '\\' '\n' '/') [^ '\n']* ('\n' | '\\' '\n' [^ '\n']* '\n'))+
+let comment                       = multiline_comment | cplusplus_comment
 
 rule c99 = parse
-  | whitespace* "#" macro as cpp 
+  | whitespace* "#" ([^ '#'] (macro)* | "\n") as cpp 
     {
       printf "preprocessor(%s)\n" cpp;
       c99 lexbuf
     }
   | ['\n']
     {
+      (* NOTE: preprocessor and comments can absorb \n too *)
       c99 lexbuf
     }
-  | whitespace+ as whitespace
+  | whitespace+ as sp
     {
-      printf "whitespace(%s)\n" whitespace;
+      printf "whitespace(%s)\n" sp;
       c99 lexbuf
     }
-  | "/*" _* "*/" as comment
+  | comment as c
     {
-      printf "comment(%s)\n" comment;
+      printf "comment(%s)\n" c;
+      c99 lexbuf
+    }
+  | floating_constant as fp
+    {
+      printf "floating_constant(%s)\n" fp;
       c99 lexbuf
     }
   | octal_prefix octal_digit* integer_suffix? as oct
@@ -118,11 +134,6 @@ rule c99 = parse
   | nonzero_digit digit* integer_suffix? as dec
     {
       printf "decimal_constant(%s)\n" dec;
-      c99 lexbuf
-    }
-  | floating_constant as fp
-    {
-      printf "floating_constant(%s)\n" fp;
       c99 lexbuf
     }
   | hexadecimal_prefix hexadecimal_digit+ integer_suffix? as hex
