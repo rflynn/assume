@@ -9,6 +9,7 @@
 
 {
   open Printf
+  open C99
 }
 
 (* Ref ??? *)
@@ -76,19 +77,23 @@ let schar                         = ([^ '"' '\\' '\n'] | escape_sequence)
 let string_literal                = 'L'? '"' schar* '"'
 
 (* Ref #1 S6.4.6 Punctuators *)
-let punctuator                    = ( "["   | "]"   | "("  | ")"  | "{"  | "}" | "."  | "->"
-                                    | "++"  | "--"  | "&"  | "*"  | "+"  | "-" | "~"  | "!"
-                                    | "/"   | "%"   | "<<" | ">>" | "<"  | ">" | "<=" | ">="
-                                    | "=="  | "!="  | "^"  | "|"  | "&&" | "||"
-                                    | "?"   | ":"   | ";"  | "..."
-                                    | "="   | "*="  | "/=" | "%=" | "+=" | "-="
-                                    | "<<=" | ">>=" | "&=" | "^=" | "|="
-                                    | ","   | "#"   | "##"
-                                    | "<:"  | ":>"  | "<%" | "%>" | "%:" | "%:%:")
+let punctuator                    = ([
+                                      '[' ']' '(' ')' '{' '}'
+                                      '.' '&' '*' '+' '-' '~'
+                                      '!' '/' '%' '<' '>' '^'
+                                      '|' '?' ':' ';' '=' ','
+                                      '#'
+                                     ]
+                                    | "->"  | "++"  | "--" | "<<"  | ">>" | "<=" 
+                                    | ">="  | "=="  | "!=" | "&&"  | "||" | "..."
+                                    | "*="  | "/="  | "%=" | "+="  | "-=" | "<<="
+                                    | ">>=" | "&="  | "^=" | "|="  | "##" | "<:" 
+                                    | ":>"  | "<%"  | "%>" | "%:"  | "%:%:" )
 
 (* Ref #1 S6.4.7 Header names *)
-let header_name                   = ( '<' [^ '>' '\n']+ '>'
-                                    | '"' [^ '"' '\n']+ '"')
+let header_name                   = ('<' [^ '>' '\n']+ '>'
+                                    |'"' [^ '"' '\n']+ '"')
+
 (* Ref #1 S6.4.8 Processing numbers *)
 (* WTF are processing numbers anyways? *)
 let pp_number                     = '.'? digit+ nondigit* (['e' 'E' 'p' 'P'] sign)?
@@ -143,51 +148,48 @@ rule c99 = parse
     }
 
   (* Ref 6.4.1 Keywords *)
-  | "auto"
-  | "break"
-  | "case"
-  | "char"
-  | "const"
-  | "continue"
-  | "default"
-  | "do"
-  | "double"
-  | "else"
-  | "enum"
-  | "extern"
-  | "float"
-  | "for"
-  | "goto"
-  | "if"
-  | "inline"
-  | "int"
-  | "long"
-  | "register"
-  | "restrict"
-  | "return"
-  | "short"
-  | "signed"
-  | "sizeof"
-  | "static"
-  | "struct"
-  | "switch"
-  | "typedef"
-  | "union"
-  | "unsigned"
-  | "void"
-  | "volatile"
-  | "while"
-  | "_Bool"
-  | "_Complex"
-  | "_Imaginary" as keyword
-    {
-      printf "keyword(%s)\n" keyword;
-      c99 lexbuf
-    }
+  | "auto"      { printf "keyword(auto)\n"      ; AUTO      }
+  | "break"     { printf "keyword(break)\n"     ; BREAK     }
+  | "case"      { printf "keyword(case)\n"      ; CASE      }
+  | "char"      { printf "keyword(char)\n"      ; CHAR      }
+  | "const"     { printf "keyword(const)\n"     ; CONST     }
+  | "continue"  { printf "keyword(continue)\n"  ; CONTINUE  }
+  | "default"   { printf "keyword(default)\n"   ; DEFAULT   }
+  | "do"        { printf "keyword(do)\n"        ; DO        }
+  | "double"    { printf "keyword(double)\n"    ; DOUBLE    }
+  | "else"      { printf "keyword(else)\n"      ; ELSE      }
+  | "enum"      { printf "keyword(enum)\n"      ; ENUM      }
+  | "extern"    { printf "keyword(extern)\n"    ; EXTERN    }
+  | "float"     { printf "keyword(float)\n"     ; FLOAT     }
+  | "for"       { printf "keyword(for)\n"       ; FOR       }
+  | "goto"      { printf "keyword(goto)\n"      ; GOTO      }
+  | "if"        { printf "keyword(if)\n"        ; IF        }
+  | "inline"    { printf "keyword(inline)\n"    ; INLINE    }
+  | "int"       { printf "keyword(int)\n"       ; INT       }
+  | "long"      { printf "keyword(long)\n"      ; LONG      }
+  | "register"  { printf "keyword(register)\n"  ; REGISTER  }
+  | "restrict"  { printf "keyword(restrict)\n"  ; RESTRICT  }
+  | "return"    { printf "keyword(return)\n"    ; RETURN    }
+  | "short"     { printf "keyword(short)\n"     ; SHORT     }
+  | "signed"    { printf "keyword(signed)\n"    ; SIGNED    }
+  | "sizeof"    { printf "keyword(sizeof)\n"    ; SIZEOF    }
+  | "static"    { printf "keyword(static)\n"    ; STATIC    }
+  | "struct"    { printf "keyword(struct)\n"    ; STRUCT    }
+  | "switch"    { printf "keyword(switch)\n"    ; SWITCH    }
+  | "typedef"   { printf "keyword(typedef)\n"   ; TYPEDEF   }
+  | "union"     { printf "keyword(union)\n"     ; UNION     }
+  | "unsigned"  { printf "keyword(unsigned)\n"  ; UNSIGNED  }
+  | "void"      { printf "keyword(void)\n"      ; VOID      }
+  | "volatile"  { printf "keyword(volatile)\n"  ; VOLATILE  }
+  | "while"     { printf "keyword(while)\n"     ; WHILE     }
+  | "_Bool"     { printf "keyword(_Bool)\n"     ; BOOL      }
+  | "_Complex"  { printf "keyword(_Complex)\n"  ; COMPLEX   }
+  | "_Imaginary"{ printf "keyword(_Imaginary)\n"; IMAGINARY }
 
+  | ";"         { printf ";\n"  ; SEMIC     }
   | punctuator as p
     {
-      printf "punctuator(%s)\n" p;
+      printf "%s\n" p;
       c99 lexbuf
     }
   | identifier as id
@@ -215,18 +217,6 @@ rule c99 = parse
     }
   | eof
     {
+      raise End_of_file
     }
-
-{
-  let main () =
-    let cin =
-      if Array.length Sys.argv > 1
-      then open_in Sys.argv.(1)
-      else stdin
-    in
-    let lexbuf = Lexing.from_channel cin in
-    c99 lexbuf
-
-  let _ = Printexc.print main ()
-}
 

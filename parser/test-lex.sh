@@ -3,6 +3,8 @@
 PassCnt=0
 FailCnt=0
 
+LEXER="lex.ml"
+
 test_lex() {
   if [ $# -ne 3 ]
   then
@@ -10,35 +12,29 @@ test_lex() {
     exit 1
   fi
   id=$1
-  #echo "$id..."
   input=$2
   expect=$3
-  #echo $input > lex.test
-  #xresult=`ocaml lex.ml < lex.test 2>&1`
-  #rm lex.test
-  result=`echo -e "$input" | ocaml lex.ml 2>&1`
+  result=`echo "$input" | ocaml $LEXER 2>&1`
   if [ "$expect" == "$result" ]
   then
     PassCnt=$((PassCnt+1))
   else
     echo "Test $id failed:"
-    echo -e "INPUT $input"
-    echo -e "EXPECT $expect"
-    echo -e "RESULT $result\n"
+    echo "INPUT $input"
+    echo "EXPECT <$expect>"
+    echo "RESULT <$result>"
+    echo ""
     FailCnt=$((FailCnt+1))
   fi
 }
 
-echo "Making..."
+echo "Testing lexer..."
 
-make
-if [ $? -ne 0 ]
+if [ ! -e $LEXER ]
 then
-  echo "Make failed"
+  echo "$LEXER does not exist"
   exit 1
 fi
-
-echo "Testing lexer..."
 
 test_lex 'Whitespace' ' '       'whitespace( )'
 echo "FIXME: fix whitespace matching. how to do char codes in ocamllex?"
@@ -49,6 +45,175 @@ echo "FIXME: fix whitespace matching. how to do char codes in ocamllex?"
 #test_lex 'Whitespace' "\f"      "whitespace(\f)"
 #test_lex 'Whitespace' "\v"      "whitespace(\v)"
 #test_lex 'Whitespace' "\r"      "whitespace(\r)"
+
+
+echo "6.4.6 Punctuators"
+test_lex '6.4.6 Punctuators'  '['       '['
+test_lex '6.4.6 Punctuators'  ']'       ']'
+test_lex '6.4.6 Punctuators'  '.'       '.'
+test_lex '6.4.6 Punctuators'  '->'      '->'
+test_lex '6.4.6 Punctuators'  '>>='     '>>='
+test_lex '6.4.6 Punctuators'  '&&&&&'   "&&
+&&
+&"
+test_lex '6.4.6 Punctuators'  '##'      '##'
+test_lex '6.4.6 Punctuators'  '+'       '+'
+test_lex '6.4.6 Punctuators'  '++'      '++'
+test_lex '6.4.6 Punctuators'  '+++'     '++
++'
+test_lex '6.4.6 Punctuators'  '--'      '--'
+test_lex '6.4.6 Punctuators'  '--->>>'  "--
+->
+>>"
+test_lex '6.4.6 Punctuators'  '<<<===>>>' "<<
+<=
+==
+>>
+>"
+# The program fragment x+++++y is parsed as x ++ ++ + y,
+test_lex '6.4.1 Example 2' 'x+++++y'  'identifier(x)
+++
+++
++
+identifier(y)'
+
+
+echo "6.4.9 Comments"
+test_lex '6.4.9 Comments (c-style)' "/**/" "comment(/**/)"
+test_lex '6.4.9 Comments (c-style)' "/**** */" "comment(/**** */)"
+test_lex '6.4.9 Comments (c-style)' "/* */" "comment(/* */)"
+test_lex '6.4.9 Comments (c-style)' "/* /* */ */" "comment(/* /* */ */)"
+test_lex '6.4.9 Comments (cplusplus easy)' "//" "comment(//
+)"
+test_lex '6.4.9 Comments (nested cplusplus)' '/*//*/' "comment(/*//*/)"
+test_lex '6.4.9 Comments (nested c)' '///* */' "comment(///* */
+)"
+test_lex '6.4.9 Comments c-style, string nested' '"/**/"' 'string_literal("/**/")'
+test_lex '6.4.9 Comments c++-style, string nested' '"//"' 'string_literal("//")'
+test_lex '6.4.9 Comments c++-style, string nested' '"/"' 'string_literal("/")'
+test_lex '6.4.9 Comments c++-style, string nested' '"///"' 'string_literal("///")'
+test_lex '6.4.9 #3 Example' '"a//b"'            'string_literal("a//b")'
+test_lex '6.4.9 #3 Example' '#include "//e"'    "preprocessor(#include \"//e\"
+)"
+test_lex '6.4.9 #3 Example' '// */'             "comment(// */
+)"
+test_lex '6.4.9 #3 Example' 'f = g/**//h;'      "identifier(f)
+whitespace( )
+=
+whitespace( )
+identifier(g)
+comment(/**/)
+/
+identifier(h)
+;"
+test_lex '6.4.9 #3 Example' "//\\
+i();" "comment(//\\
+i();
+)"
+test_lex '6.4.9 #3 Example' "/\\
+/ j();" "comment(/\\
+/ j();
+)"
+test_lex '6.4.9 #3 Example' "/*//*/ l();" "comment(/*//*/)
+whitespace( )
+identifier(l)
+(
+)
+;"
+test_lex '6.4.9 #3 Example' "m=n//**/o
++ p;" "identifier(m)
+=
+identifier(n)
+comment(//**/o
+)
++
+whitespace( )
+identifier(p)
+;"
+test_lex '6.4.9 #3 Multiline test 1' "/\\
+/\\
+//" "comment(/\\
+/\\
+//
+)"
+test_lex '6.4.9 #3 Multiline test 1' "/\\
+/\\
+//
+/\\
+/" "comment(/\\
+/\\
+//
+/\\
+/
+)"
+test_lex "? preprocessor (#include h-chars)" '#include "<foo>"' "preprocessor(#include \"<foo>\"
+)"
+test_lex "? preprocessor (#include q-chars)" '#include <"foo">' "preprocessor(#include <\"foo\">
+)"
+test_lex "? macro lone #" "#" "preprocessor(#
+)"
+test_lex "? macro # and \\" "#\\
+" "preprocessor(#\\
+
+)"
+test_lex "? macro (multi \\ lines)" "#\\
+\\
+" "preprocessor(#\\
+\\
+
+)"
+test_lex '? macro (simple #define)' "#define X" "preprocessor(#define X
+)"
+test_lex '? macro (#define and \\)' "#define X \\
+Y" "preprocessor(#define X \\
+Y
+)"
+
+
+
+echo "6.4.2 Identifiers"
+test_lex '6.4.2 Identifiers' '_'                      'identifier(_)'
+test_lex '6.4.2 Identifiers' '__'                     'identifier(__)'
+test_lex '6.4.2 Identifiers' '___'                    'identifier(___)'
+test_lex '6.4.2 Identifiers' '_____________________'  'identifier(_____________________)'
+test_lex '6.4.2 Identifiers' '__FILE__'               'identifier(__FILE__)'
+test_lex '6.4.2 Identifiers' '__LINE__'               'identifier(__LINE__)'
+test_lex '6.4.2 Identifiers' '__func__'               'identifier(__func__)'
+test_lex '6.4.2 Identifiers' 'a'                      'identifier(a)'
+test_lex '6.4.2 Identifiers' '_0'                     'identifier(_0)'
+test_lex '6.4.2 Identifiers' '_a0'                    'identifier(_a0)'
+test_lex '6.4.2 Identifiers' '_a0a'                   'identifier(_a0a)'
+
+echo "6.4.3 Universal character names"
+test_lex '6.4.2 Identifiers' '_\u0123'                'identifier(_\u0123)'
+test_lex '6.4.2 Identifiers' 'a\u4567'                'identifier(a\u4567)'
+test_lex '6.4.2 Identifiers' 'a\u0123\u4567'          'identifier(a\u0123\u4567)'
+test_lex '6.4.2 Identifiers' 'a\U01234567'            'identifier(a\U01234567)'
+test_lex '6.4.2 Identifiers' 'a\U01234567\u9ABC'      'identifier(a\U01234567\u9ABC)'
+test_lex '6.4.2 Identifiers' '_\U89ABCDEF\u9ABC'      'identifier(_\U89ABCDEF\u9ABC)'
+
+echo "6.4.4.3 Enum constants"
+ 
+echo "6.4.5 Character constants"
+test_lex '6.4.5 Character constants'  "''"          "character_constant('')"
+test_lex '6.4.5 Character constants'  "L''"         "character_constant(L'')"
+test_lex '6.4.5 Character constants'  "'\\x0'"       "character_constant('\\x0')"
+test_lex '6.4.5 Character constants'  "'\\x00'"      "character_constant('\\x00')"
+test_lex '6.4.5 Character constants'  "'\\x000'"     "character_constant('\\x000')"
+test_lex '6.4.5 Character constants'  "'\\x0000'"    "character_constant('\\x0000')"
+test_lex '6.4.5 Character constants'  "'\\a'"        "character_constant('\\a')"
+test_lex '6.4.5 Character constants'  "'\\b'"        "character_constant('\\b')"
+test_lex '6.4.5 Character constants'  "'\\f'"        "character_constant('\\f')"
+test_lex '6.4.5 Character constants'  "'\\n'"        "character_constant('\\n')"
+test_lex '6.4.5 Character constants'  "'\\r'"        "character_constant('\\r')"
+test_lex '6.4.5 Character constants'  "'\\t'"        "character_constant('\\t')"
+test_lex '6.4.5 Character constants'  "'\\v'"        "character_constant('\\v')"
+test_lex '6.4.5 Character constants'  "'\\xA\\xB'"    "character_constant('\\xA\\xB')"
+test_lex '6.4.5 empty string'         '""'          'string_literal("")'
+test_lex '6.4.5 empty wide string'    'L""'         'string_literal(L"")'
+test_lex '6.4.5 string'               '"a"'         'string_literal("a")'
+test_lex '6.4.5 string escape'        '"\\\\"'      'string_literal("\\\\")'
+test_lex '6.4.5 string escape'        '"\\\""'      'string_literal("\\\"")'
 
 echo "6.4.1 Keywords"
 test_lex '6.4.1 Keywords' 'auto'        'keyword(auto)'
@@ -88,27 +253,6 @@ test_lex '6.4.1 Keywords' 'while'       'keyword(while)'
 test_lex '6.4.1 Keywords' '_Bool'       'keyword(_Bool)'
 test_lex '6.4.1 Keywords' '_Complex'    'keyword(_Complex)'
 test_lex '6.4.1 Keywords' '_Imaginary'  'keyword(_Imaginary)'
-
-echo "6.4.2 Identifiers"
-test_lex '6.4.2 Identifiers' '_'                      'identifier(_)'
-test_lex '6.4.2 Identifiers' '__'                     'identifier(__)'
-test_lex '6.4.2 Identifiers' '___'                    'identifier(___)'
-test_lex '6.4.2 Identifiers' '_____________________'  'identifier(_____________________)'
-test_lex '6.4.2 Identifiers' '__FILE__'               'identifier(__FILE__)'
-test_lex '6.4.2 Identifiers' '__LINE__'               'identifier(__LINE__)'
-test_lex '6.4.2 Identifiers' '__func__'               'identifier(__func__)'
-test_lex '6.4.2 Identifiers' 'a'                      'identifier(a)'
-test_lex '6.4.2 Identifiers' '_0'                     'identifier(_0)'
-test_lex '6.4.2 Identifiers' '_a0'                    'identifier(_a0)'
-test_lex '6.4.2 Identifiers' '_a0a'                   'identifier(_a0a)'
-
-echo "6.4.3 Universal character names"
-test_lex '6.4.2 Identifiers' '_\u0123'                'identifier(_\u0123)'
-test_lex '6.4.2 Identifiers' 'a\u4567'                'identifier(a\u4567)'
-test_lex '6.4.2 Identifiers' 'a\u0123\u4567'          'identifier(a\u0123\u4567)'
-test_lex '6.4.2 Identifiers' 'a\U01234567'            'identifier(a\U01234567)'
-test_lex '6.4.2 Identifiers' 'a\U01234567\u9ABC'      'identifier(a\U01234567\u9ABC)'
-test_lex '6.4.2 Identifiers' '_\U89ABCDEF\u9ABC'      'identifier(_\U89ABCDEF\u9ABC)'
 
 echo "6.4.4 Constants"
 
@@ -172,139 +316,6 @@ test_lex '6.4.4.2 Floating constant (hex)'  '0x3.243F6A88p+03'  'floating_consta
 test_lex '6.4.4.2 Floating constant'        '0e0'               'floating_constant(0e0)'
 test_lex '6.4.4.2 Floating constant'        '0e+0'              'floating_constant(0e+0)'
 test_lex '6.4.4.2 Floating constant'        '0e-0'              'floating_constant(0e-0)'
-
-echo "6.4.4.3 Enum constants"
-
-echo "6.4.5 Character constants"
-test_lex '6.4.5 Character constants'  "''"          "character_constant('')"
-test_lex '6.4.5 Character constants'  "L''"         "character_constant(L'')"
-test_lex '6.4.5 Character constants'  "'\x0'"       "character_constant('\x0')"
-test_lex '6.4.5 Character constants'  "'\x00'"      "character_constant('\x00')"
-test_lex '6.4.5 Character constants'  "'\x000'"     "character_constant('\x000')"
-test_lex '6.4.5 Character constants'  "'\x0000'"    "character_constant('\x0000')"
-test_lex '6.4.5 Character constants'  "'\a'"        "character_constant('\a')"
-test_lex '6.4.5 Character constants'  "'\b'"        "character_constant('\b')"
-test_lex '6.4.5 Character constants'  "'\f'"        "character_constant('\f')"
-test_lex '6.4.5 Character constants'  "'\n'"        "character_constant('\n')"
-test_lex '6.4.5 Character constants'  "'\r'"        "character_constant('\r')"
-test_lex '6.4.5 Character constants'  "'\t'"        "character_constant('\t')"
-test_lex '6.4.5 Character constants'  "'\v'"        "character_constant('\v')"
-test_lex '6.4.5 Character constants'  "'\xA\xB'"    "character_constant('\xA\xB')"
-test_lex '6.4.5 empty string'         '""'          'string_literal("")'
-test_lex '6.4.5 empty wide string'    'L""'         'string_literal(L"")'
-test_lex '6.4.5 string'               '"a"'         'string_literal("a")'
-test_lex '6.4.5 string escape'        '"\\\\"'      'string_literal("\\\\")'
-test_lex '6.4.5 string escape'        '"\\\""'      'string_literal("\\\"")'
-
-echo "6.4.6 Punctuators"
-test_lex '6.4.6 Punctuators'  '['     'punctuator([)'
-test_lex '6.4.6 Punctuators'  ']'     'punctuator(])'
-test_lex '6.4.6 Punctuators'  '.'     'punctuator(.)'
-test_lex '6.4.6 Punctuators'  '->'    'punctuator(->)'
-test_lex '6.4.6 Punctuators'  '>>='   'punctuator(>>=)'
-test_lex '6.4.6 Punctuators'  '##'    'punctuator(##)'
-test_lex '6.4.6 Punctuators'  '+'     'punctuator(+)'
-test_lex '6.4.6 Punctuators'  '++'    'punctuator(++)'
-test_lex '6.4.6 Punctuators'  '+++'   'punctuator(++)
-punctuator(+)'
-test_lex '6.4.6 Punctuators'  '--'    'punctuator(--)'
-# The program fragment x+++++y is parsed as x ++ ++ + y,
-test_lex '6.4.1 Example 2' 'x+++++y'  'identifier(x)
-punctuator(++)
-punctuator(++)
-punctuator(+)
-identifier(y)'
-
-test_lex '6.4.9 Comments (c-style)' "/**/" "comment(/**/)"
-test_lex '6.4.9 Comments (c-style)' "/**** */" "comment(/**** */)"
-test_lex '6.4.9 Comments (c-style)' "/* */" "comment(/* */)"
-test_lex '6.4.9 Comments (c-style)' "/* /* */ */" "comment(/* /* */ */)"
-test_lex '6.4.9 Comments (cplusplus easy)' "//" "comment(//
-)"
-test_lex '6.4.9 Comments (nested cplusplus)' '/*//*/' "comment(/*//*/)"
-test_lex '6.4.9 Comments (nested c)' '///* */' "comment(///* */
-)"
-test_lex '6.4.9 Comments c-style, string nested' '"/**/"' 'string_literal("/**/")'
-test_lex '6.4.9 Comments c++-style, string nested' '"//"' 'string_literal("//")'
-test_lex '6.4.9 Comments c++-style, string nested' '"/"' 'string_literal("/")'
-test_lex '6.4.9 Comments c++-style, string nested' '"///"' 'string_literal("///")'
-test_lex '6.4.9 #3 Example' '"a//b"'            'string_literal("a//b")'
-test_lex '6.4.9 #3 Example' '#include "//e"'    "preprocessor(#include \"//e\"
-)"
-test_lex '6.4.9 #3 Example' '// */'             "comment(// */
-)"
-test_lex '6.4.9 #3 Example' 'f = g/**//h;'      "identifier(f)
-whitespace( )
-punctuator(=)
-whitespace( )
-identifier(g)
-comment(/**/)
-punctuator(/)
-identifier(h)
-punctuator(;)"
-test_lex '6.4.9 #3 Example' "//\\
-i();" "comment(//\\
-i();
-)"
-test_lex '6.4.9 #3 Example' "/\\
-/ j();" "comment(/\\
-/ j();
-)"
-test_lex '6.4.9 #3 Example' "/*//*/ l();" "comment(/*//*/)
-whitespace( )
-identifier(l)
-punctuator(()
-punctuator())
-punctuator(;)"
-test_lex '6.4.9 #3 Example' "m=n//**/o
-+ p;" "identifier(m)
-punctuator(=)
-identifier(n)
-comment(//**/o
-)
-punctuator(+)
-whitespace( )
-identifier(p)
-punctuator(;)"
-test_lex '6.4.9 #3 Multiline test 1' "/\\
-/\\
-//" "comment(/\\
-/\\
-//
-)"
-test_lex '6.4.9 #3 Multiline test 1' "/\\
-/\\
-//
-/\\
-/" "comment(/\\
-/\\
-//
-/\\
-/
-)"
-test_lex "? preprocessor (#include h-chars)" '#include "<foo>"' "preprocessor(#include \"<foo>\"
-)"
-test_lex "? preprocessor (#include q-chars)" '#include <"foo">' "preprocessor(#include <\"foo\">
-)"
-test_lex "? macro lone #" "#" "preprocessor(#
-)"
-test_lex "? macro # and \\" "#\\
-" "preprocessor(#\\
-
-)"
-test_lex "? macro (multi \\ lines)" "#\\
-\\
-" "preprocessor(#\\
-\\
-
-)"
-test_lex '? macro (simple #define)' "#define X" "preprocessor(#define X
-)"
-test_lex '? macro (#define and \\)' "#define X \\
-Y" "preprocessor(#define X \\
-Y
-)"
-
 ######## end test cases, report
 
 TotalCnt=$((PassCnt+FailCnt))
