@@ -15,8 +15,7 @@
 (* macros may span multiple lines *)
 let macro                         = ([^ '\n']* '\\' '\n')* [^ '\n']* '\n'
 
-(* FIXME: add '\v' '\f' *)
-let whitespace                    = [' ' '\t']
+let whitespace                    = [' ' '\t' '\013' '\014']
 
 (* Ref #1 S6.4.4.1 Integer constants *)
 let nondigit                      = ['_' 'a'-'z' 'A'-'Z']

@@ -10,21 +10,17 @@ test_lex() {
     exit 1
   fi
   id=$1
-  #echo "$id..."
   input=$2
   expect=$3
-  #echo $input > lex.test
-  #xresult=`ocaml lex.ml < lex.test 2>&1`
-  #rm lex.test
-  result=`echo -e "$input" | ocaml lex.ml 2>&1`
+  result=`echo "$input" | ocaml lex.ml 2>&1`
   if [ "$expect" == "$result" ]
   then
     PassCnt=$((PassCnt+1))
   else
     echo "Test $id failed:"
-    echo -e "INPUT $input"
-    echo -e "EXPECT $expect"
-    echo -e "RESULT $result\n"
+    echo "INPUT $input"
+    echo "EXPECT $expect"
+    echo "RESULT $result\n"
     FailCnt=$((FailCnt+1))
   fi
 }
@@ -41,14 +37,24 @@ fi
 echo "Testing lexer..."
 
 test_lex 'Whitespace' ' '       'whitespace( )'
-echo "FIXME: fix whitespace matching. how to do char codes in ocamllex?"
-#test_lex 'Whitespace' "a\tb"    "identifier(a)
-#whitespace(\t)
-#identifier(b)
-#"
-#test_lex 'Whitespace' "\f"      "whitespace(\f)"
-#test_lex 'Whitespace' "\v"      "whitespace(\v)"
-#test_lex 'Whitespace' "\r"      "whitespace(\r)"
+test_lex 'Whitespace' "a	b"    "identifier(a)
+whitespace(	)
+identifier(b)"
+
+# test form feed character "\f"
+test_lex 'Whitespace' "a$(printf \\013)b" "identifier(a)
+whitespace($(printf \\013))
+identifier(b)"
+
+# test vertical tab character "\v"
+test_lex 'Whitespace' "a$(printf \\014)b" "identifier(a)
+whitespace($(printf \\014))
+identifier(b)"
+
+# test return character "\r"
+test_lex 'Whitespace' "a$(printf \\011)b" "identifier(a)
+whitespace($(printf \\011))
+identifier(b)"
 
 echo "6.4.1 Keywords"
 test_lex '6.4.1 Keywords' 'auto'        'keyword(auto)'
