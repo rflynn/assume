@@ -4,6 +4,8 @@ OCAMLC=ocamlc
 LEX=ocamllex
 YACC=ocamlyacc
 
+#ocamlbuild -cflags -I,/usr/lib/ocaml/site-packages/extlib/ -lflags -I,/usr/lib/ocaml/site-packages/extlib/ -lib extLib target
+
 all: parse lex
 	$(OCAMLC) -c lex.ml
 	$(OCAMLC) -c c99.ml
@@ -21,5 +23,6 @@ test: all
 	./test-lex.sh
 
 clean:
-	$(RM) c99 *.cm{i,o} lex.ml c99.{ml,mli,output}
+	$(RM) c99 c99.ml c99.mli c99.output lex.ml
+	$(RM) *.cmi *.cmo
 

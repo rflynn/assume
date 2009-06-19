@@ -1,0 +1,17 @@
+
+Current issues:
+
+I want to build up arbitrary tuples to form our AST.
+
+  Problem:
+
+    Return type of a single yacc rule apparently have to be the same(?)
+    How can I get around this?
+
+    I want to dump whatever structure I have at the moment to test.
+    Unfortunately ocaml does have a "dump"?!?!?!?!?!?!?!?!?!?!?!?!?!?!??!
+
+    There is a third-party library called "extlib" which contains a module Std which has a "dump", but...
+    
+      !!! using external libraries in ocaml is a confusing pain in the ass
+
