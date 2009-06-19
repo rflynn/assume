@@ -19,11 +19,12 @@ In the meantime, here is some reading material:
 
 * http://c2xml.sourceforge.net/
   This is a straight-forward tool and a really good idea.
+  Sadly it's Windows-only.
   XML is more readily manipulable than C source.
 
 * http://splint.org/
   Modern UNIX "lint"; infamous for its copious output.
-  It's written in C(!)
+  Written in C(!)
 
 * http://mtc.epfl.ch/software-tools/blast/
   BLAST a static analyzer from Berkely. Haven't figured out

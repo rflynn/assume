@@ -108,6 +108,7 @@ let comment                       = multiline_comment | cplusplus_comment
 rule c99 = parse
   | whitespace* "#" ([^ '#'] (macro)* | "\n") as cpp 
     {
+      (* TODO: actually parse cpp *)
       printf "preprocessor(%s)\n" cpp;
       c99 lexbuf
     }
@@ -186,7 +187,62 @@ rule c99 = parse
   | "_Complex"  { printf "keyword(_Complex)\n"  ; COMPLEX   }
   | "_Imaginary"{ printf "keyword(_Imaginary)\n"; IMAGINARY }
 
-  | ";"         { printf ";\n"  ; SEMIC     }
+  (* Ref #1 S6.4.6 Punctuators *)
+  | "["     { printf "[\n"    ; OBRACE        } 
+  | "]"     { printf "]\n"    ; CBRACE        } 
+  | "("     { printf "(\n"    ; OPAREN        } 
+  | ")"     { printf ")\n"    ; CPAREN        } 
+  | "{"     { printf "{\n"    ; OBRACK        } 
+  | "}"     { printf "}\n"    ; CBRACK        } 
+  | "."     { printf ".\n"    ; DOT           } 
+  | "->"    { printf "->\n"   ; RARROW        }
+  | "++"    { printf "++\n"   ; PLUSPLUS      } 
+  | "--"    { printf "--\n"   ; DASHDASH      } 
+  | "&"     { printf "&\n"    ; AMP           } 
+  | "*"     { printf "*\n"    ; STAR          } 
+  | "+"     { printf "+\n"    ; PLUS          } 
+  | "-"     { printf "-\n"    ; DASH          } 
+  | "~"     { printf "~\n"    ; SQUIG         } 
+  | "!"     { printf "!\n"    ; BANG          }
+  | "/"     { printf "/\n"    ; SLASH         } 
+  | "%"     { printf "%\n"    ; PCT           } 
+  | "<<"    { printf "<<\n"   ; LTLT          } 
+  | ">>"    { printf ">>\n"   ; GTGT          } 
+  | "<"     { printf "<\n"    ; LT            } 
+  | ">"     { printf ">\n"    ; GT            } 
+  | "<="    { printf "<=\n"   ; LTEQ          } 
+  | ">="    { printf ">=\n"   ; GTEQ          } 
+  | "=="    { printf "==\n"   ; EQEQ          } 
+  | "!="    { printf "!=\n"   ; BANGEQ        } 
+  | "^"     { printf "^\n"    ; CARET         } 
+  | "|"     { printf "|\n"    ; PIPE          } 
+  | "&&"    { printf "&&\n"   ; AMPAMP        } 
+  | "||"    { printf "||\n"   ; PIPEPIPE      }
+  | "?"     { printf "?\n"    ; QMARK         } 
+  | ":"     { printf ":\n"    ; COLON         } 
+  | ";"     { printf ";\n"    ; SEMIC         } 
+  | "..."   { printf "...\n"  ; ELLIPSIS      }
+  | "="     { printf "=\n"    ; EQ            } 
+  | "*="    { printf "*=\n"   ; STAREQ        } 
+  | "/="    { printf "/=\n"   ; SLASHEQ       } 
+  | "%="    { printf "%=\n"   ; PCTEQ         } 
+  | "+="    { printf "+=\n"   ; PLUSEQ        } 
+  | "-="    { printf "-=\n"   ; DASHEQ        } 
+  | "<<="   { printf "<<=\n"  ; LTLTEQ        } 
+  | ">>="   { printf ">>=\n"  ; GTGTEQ        } 
+  | "&="    { printf "&=\n"   ; AMPEQ         } 
+  | "^="    { printf "^=\n"   ; CARETEQ       } 
+  | "|="    { printf "|=\n"   ; PIPEEQ        }
+  | ","     { printf ",\n"    ; COMMA         } 
+  | "#"     { printf "#\n"    ; HASH          } 
+  | "##"    { printf "##\n"   ; HASHISH       }
+  | "<:"    { printf "<:\n"   ; LTCOLON       } 
+  | ":>"    { printf ":>\n"   ; COLONGT       } 
+  | "<%"    { printf "<%\n"   ; LTPCT         } 
+  | "%>"    { printf "%>\n"   ; PCTGT         } 
+  | "%:"    { printf "%:\n"   ; PCTCOLON      } 
+  | "%:%:"  { printf "%:%:\n" ; PCTCOLON2     }
+
   | punctuator as p
     {
       printf "%s\n" p;

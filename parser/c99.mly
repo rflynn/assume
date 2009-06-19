@@ -2,57 +2,112 @@
 
 %{
 open Printf
+type ASTNode = Leaf of string | Node of string * AStNode
 %}
 
-%token NEWLINE
-%token <string> CPP
-%token <string> WHITESPACE
-%token <string> COMMENT
-%token <string> HEADER_NAME
-%token <string> PP_NUMBER
-%token <string> INTEGER_CONSTANT_DEC
-%token <string> FLOATING_CONSTANT
-%token <string> CHARACTER_CONSTANT
-%token <string> STRING_LITERAL
-%token <string> IDENTIFIER
-%token AUTO
-%token BREAK
-%token CASE
-%token CHAR
-%token CONST
-%token CONTINUE
-%token DEFAULT
-%token DO
-%token DOUBLE
-%token ELSE
-%token ENUM
-%token EXTERN
-%token FLOAT
-%token FOR
-%token GOTO
-%token IF
-%token INLINE
-%token INT
-%token LONG
-%token REGISTER
-%token RESTRICT
-%token RETURN
-%token SHORT
-%token SIGNED
-%token SIZEOF
-%token STATIC
-%token STRUCT
-%token SWITCH
-%token TYPEDEF
-%token UNION
-%token UNSIGNED
-%token VOID
-%token VOLATILE
-%token WHILE
-%token BOOL
-%token COMPLEX
-%token IMAGINARY
-%token SEMIC
+%token <ASTNode> NEWLINE
+%token <ASTNode> CPP
+%token <ASTNode> WHITESPACE
+%token <ASTNode> COMMENT
+%token <ASTNode> HEADER_NAME
+%token <ASTNode> PP_NUMBER
+%token <ASTNode> INTEGER_CONSTANT_DEC
+%token <ASTNode> FLOATING_CONSTANT
+%token <ASTNode> CHARACTER_CONSTANT
+%token <ASTNode> STRING_LITERAL
+%token <ASTNode> IDENTIFIER
+%token <ASTNode> AUTO
+%token <ASTNode> BREAK
+%token <ASTNode> CASE
+%token <ASTNode> CHAR
+%token <ASTNode> CONST
+%token <ASTNode> CONTINUE
+%token <ASTNode> DEFAULT
+%token <ASTNode> DO
+%token <ASTNode> DOUBLE
+%token <ASTNode> ELSE
+%token <ASTNode> ENUM
+%token <ASTNode> EXTERN
+%token <ASTNode> FLOAT
+%token <ASTNode> FOR
+%token <ASTNode> GOTO
+%token <ASTNode> IF
+%token <ASTNode> INLINE
+%token <ASTNode> INT
+%token <ASTNode> LONG
+%token <ASTNode> REGISTER
+%token <ASTNode> RESTRICT
+%token <ASTNode> RETURN
+%token <ASTNode> SHORT
+%token <ASTNode> SIGNED
+%token <ASTNode> SIZEOF
+%token <ASTNode> STATIC
+%token <ASTNode> STRUCT
+%token <ASTNode> SWITCH
+%token <ASTNode> TYPEDEF
+%token <ASTNode> UNION
+%token <ASTNode> UNSIGNED
+%token <ASTNode> VOID
+%token <ASTNode> VOLATILE
+%token <ASTNode> WHILE
+%token <ASTNode> BOOL
+%token <ASTNode> COMPLEX
+%token <ASTNode> IMAGINARY
+
+%token <ASTNode> OBRACE
+%token <ASTNode> CBRACE
+%token <ASTNode> OPAREN
+%token <ASTNode> CPAREN
+%token <ASTNode> OBRACK
+%token <ASTNode> CBRACK
+%token <ASTNode> DOT
+%token <ASTNode> RARROW
+%token <ASTNode> PLUSPLUS
+%token <ASTNode> DASHDASH
+%token <ASTNode> AMP
+%token <ASTNode> STAR
+%token <ASTNode> PLUS
+%token <ASTNode> DASH
+%token <ASTNode> SQUIG
+%token <ASTNode> BANG
+%token <ASTNode> SLASH
+%token <ASTNode> PCT
+%token <ASTNode> LTLT
+%token <ASTNode> GTGT
+%token <ASTNode> LT
+%token <ASTNode> GT
+%token <ASTNode> LTEQ
+%token <ASTNode> GTEQ
+%token <ASTNode> EQEQ
+%token <ASTNode> BANGEQ
+%token <ASTNode> CARET
+%token <ASTNode> PIPE
+%token <ASTNode> AMPAMP
+%token <ASTNode> PIPEPIPE
+%token <ASTNode> QMARK
+%token <ASTNode> COLON
+%token <ASTNode> SEMIC
+%token <ASTNode> ELLIPSIS
+%token <ASTNode> EQ
+%token <ASTNode> STAREQ
+%token <ASTNode> SLASHEQ
+%token <ASTNode> PCTEQ
+%token <ASTNode> PLUSEQ
+%token <ASTNode> DASHEQ
+%token <ASTNode> LTLTEQ
+%token <ASTNode> GTGTEQ
+%token <ASTNode> AMPEQ
+%token <ASTNode> CARETEQ
+%token <ASTNode> PIPEEQ
+%token <ASTNode> COMMA
+%token <ASTNode> HASH
+%token <ASTNode> HASHISH
+%token <ASTNode> LTCOLON
+%token <ASTNode> COLONGT
+%token <ASTNode> LTPCT
+%token <ASTNode> PCTGT
+%token PCTCOLON
+%token PCTCOLON2
 
 %start translation_unit
 %type <unit> translation_unit
