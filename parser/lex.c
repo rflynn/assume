@@ -23,18 +23,28 @@ static struct {
 	regex_t rgx;
 	const char *pattern;
 } Lexeme[T_CNT] = {
-	{ T,		"",			R, "" },
+	{ T,						"",										R, "" 																																											},
 	/* non-code */
-	{ T_SPACE,			"whitespace",					R, "^[ \f\r\t\v]\\+" },
-	{ T_NEWLINE,		"newline",	 					R, "^\n" },
-	/* TODO: multi-line weird preprocessor comment crap; it's going to be a bitch getting it to work in this crappy syntax*/
+	{ T_SPACE,			"whitespace",					R, "^[ \f\r\t\v]\\+" 																																				},
+	{ T_NEWLINE,		"newline",	 					R, "^\n" 																																										},
+	/* TODO: multi-line weird preprocessor comment crap; it's going to be a bitch getting it to work in this crappy syntax */
 	{ T_COMMENT,		"comment",	 					R, "^\\(/\\*\\([^\\0]*\\)\\*/\\|//[^\\0\n]*\n\\|//[^\\0\n]*\\)" }, //|//[^\\n]\\+\\)" }, //|\\(\\(//\\|/\\\n/\\)[^\n]*\\(\n\\|\\\n[^\n]*\n\\)\\)\\+
-	{ T_CPP,  			"preprocessor",				R, "#\\(include\\|define\\|\\)[^\\n]*\n" },
+	{ T_CPP,  			"preprocessor",				R, "#\\(include\\|define\\|\\)[^\\n]*\n" 																										},
 	/* constant values */
-	{ T_CONST_FLOAT,"float",	 						R, "^[0-9]\\.\\([[:digit:]]\\+\\([eE][+-]\\?[0-9]\\+\\)\\?\\)\\?" },
-	{ T_CONST_INT,	"integer_constant",		R, "^\\(0[xX][[:xdigit:]]\\+\\|0[0-7]*\\|[123456789][0123456789]*\\)[uU]\\?[lL]\\?[lL]\\?" },
-	{ T_CONST_STR,	"string_literal",			R, "^L\\?\"\\([^\"]\\+\\|\\\"\\)*\"" },
-	{ T_CONST_CHAR,	"character_constant",	R, "^L\\?'\\([^']*\\|\\\\'\\)*'" },
+	{ T_CONST_FLOAT,"floating_constant",	R,
+		"^\\("
+			/* decimal float */
+			"\\([0-9]\\(\\.[0-9]*\\)\\?\\|\\.[0-9]\\+\\)\\([eE][+-]\\?[0-9]\\+\\)\\?"
+			"\\|"
+			/* hexadecimal float */
+			"0[xX][[:xdigit:]]\\+\\(\\.[[:xdigit:]]\\+\\)\\?[pP][+-]\\?[0-9]\\+"
+		"\\)"
+		/* suffix */
+		"\\([fF]\\?[lL]\\?\\|[lL][fF]\\)\\?"
+	},
+	{ T_CONST_INT,	"integer_constant",		R, "^\\(0[xX][[:xdigit:]]\\+\\|0[0-7]*\\|[1-9][0-9]*\\)[uU]\\?[lL]\\?[lL]\\?" 							},
+	{ T_CONST_STR,	"string_literal",			R, "^L\\?\"\\([^\"]\\+\\|\\\"\\)*\"" 																												},
+	{ T_CONST_CHAR,	"character_constant",	R, "^L\\?'\\([^']*\\|\\\\'\\)*'" 																														},
 	{ T_IDENT,			"identifier",					R, "^[_a-zA-Z]\\([_a-zA-Z0-9]\\+\\|\\\\u[[:xdigit:]]\\{4\\}\\|\\\\U[[:xdigit:]]\\{8\\}\\)*" },
 	/* keywords */
 	{ T_AUTO,				"keyword",		R, "^auto"				},
@@ -141,7 +151,7 @@ static struct {
  */
 static struct {
 	unsigned cnt;
-	enum tok lexeme[7];
+	enum tok lexeme[7]; /* 's' has 7 possible matches: short, sizeof, static, signed, struct, switch, $identifier */
 } Match[256];
 
 static void match_add(const char c, enum tok t)
@@ -153,6 +163,10 @@ static void match_add(const char c, enum tok t)
 	Match[i].cnt++;
 }
 
+/**
+ * for each complex regular expression (T_SPACE through T_INDENT),
+ * add the token to each character that may begin that token's match.
+ */
 static void match_build_regexes(void)
 {
 	char c;
@@ -169,11 +183,12 @@ static void match_build_regexes(void)
 	
 	match_add('#',	T_CPP);
 	
-	for (c = '0'; c < '9'; c++)
-		match_add(c,	T_CONST_FLOAT);
-	
-	for (c = '0'; c < '9'; c++)
+	for (c = '0'; c <= '9'; c++)
 		match_add(c,	T_CONST_INT);
+	
+	for (c = '0'; c <= '9'; c++)
+		match_add(c,	T_CONST_FLOAT);
+	match_add('.',	T_CONST_FLOAT);
 	
 	match_add('L',	T_CONST_STR);
 	match_add('"',	T_CONST_STR);
@@ -182,9 +197,9 @@ static void match_build_regexes(void)
 	match_add('\'', T_CONST_CHAR);
 	
 	match_add('_',	T_IDENT);
-	for (c = 'a'; c < 'z'; c++)
+	for (c = 'a'; c <= 'z'; c++)
 		match_add(c,	T_IDENT);
-	for (c = 'A'; c < 'Z'; c++)
+	for (c = 'A'; c <= 'Z'; c++)
 		match_add(c,	T_IDENT);
 }
 
