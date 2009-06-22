@@ -1,0 +1,52 @@
+
+the "dangling else" problem
+
+  if (a) if (b) else c;
+
+  require
+
+  if (a){ if (b) else c; }
+
+
+C has too many operators
+
+  C99 defines 54 operators:
+
+    [ ] ( ) { } . -> ++ -- & * + - ~ !
+    / % << >> < > <= >= == != ^ | && || ? : ; ...
+    = *= /= %= += -= <<= >>= &= ^= |=
+    , # ## <: :> <% %> %: %:%:
+
+  this yields a whole document called "C Operator Precedence and Associativity",
+  which defines in which direction the operators bind and in which order they are
+  evaluated. but C defines an explicit operator for this: ( and ). why not
+  just use them?
+  
+  instead, bitwise operators could be made into standard macros instead:
+
+  a | b & c
+
+    which is really...
+
+  (a | (b & c))
+
+    becomes...
+
+  bor(a,band(b,c))
+
+  it's actually longer, but it's associativity and precedence are explicit.
+
+the assignment operations (i.e. +=) are worthless and should be removed
+
+the ternary operator ? is : ugly.
+  make it a standard macro. IF(foo, bar, baz)
+
+
+    [ ] ( ) { } . -> ++ -- * + - !
+    / % < > <= >= == != && || : ; ...
+    = , # ##
+    <: :> <% %> %: %:%:
+    
+    bsl(), bsr(), bneg(), bxor(), bor(), band(), IF()
+
+
