@@ -88,6 +88,7 @@ test_lex '6.4.1 Keywords' 'while'       'keyword(while)\n'
 test_lex '6.4.1 Keywords' '_Bool'       'keyword(_Bool)\n'
 test_lex '6.4.1 Keywords' '_Complex'    'keyword(_Complex)\n'
 test_lex '6.4.1 Keywords' '_Imaginary'  'keyword(_Imaginary)\n'
+test_lex '6.4.1 Example 2' 'x+++++y'     'ident(x)(++)(++)(+)ident(y)\n'
 
 echo "6.4.2 Identifiers"
 test_lex '6.4.2 Identifiers' '_'                      'ident(_)\n'
@@ -235,8 +236,9 @@ test_lex '6.4.6 Punctuators'  '|'       '(|)\n'
 test_lex '6.4.6 Punctuators'  '||'      '(||)\n'
 test_lex '6.4.6 Punctuators'  '|||'     '(||)(|)\n'
 test_lex '6.4.6 Punctuators'  '||=|'    '(||)(=)(|)\n'
-# The program fragment x+++++y is parsed as x ++ ++ + y,
-test_lex '6.4.1 Example 2' 'x+++++y'  'ident(x)(++)(++)(+)ident(y)\n'
+test_lex '6.4.6 Punctuators'  '!'       '(!)\n'
+test_lex '6.4.6 Punctuators'  '!!'      '(!)(!)\n'
+test_lex '6.4.6 Punctuators'  '!!='     '(!)(!=)\n'
 
 echo "6.4.7 Header Names(?)"
 echo "6.4.8 Preprocessing Numbers(?)"

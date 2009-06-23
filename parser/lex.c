@@ -20,6 +20,10 @@
 # define R {0}
 #endif
 
+/**
+ * forall enum tok
+ *  list all pertinent info
+ */
 static struct {
   enum tok id;
   const char *descr;
@@ -31,25 +35,38 @@ static struct {
   { T_SPACE,      "ws",         R, "^[ \f\r\t\v]+"},
   { T_NEWLINE,    "nl",         R, "^\n"          },
   { T_COMMENT,    "comment",    R,
-  /* TODO: multi-line weird preprocessor comment crap;
-   * it's going to be a bitch getting it to work in
-   * this crappy syntax */
+  /* TODO: multi-line weird preprocessor comment crap,
+   * uncomment the tests from test-lex.sh!
+   */
     "^("
       /* C-style comment, like this */
       "/\\*" 
         "("
-          "[^*\\\\]+"               /* anything but \ and *        */
-          "|\\*[^/]"                /* * then anything except /    */
-          "|\\."                    /* escaped something           */
+          "\\*[^/]"                 /* * then anything except /    */
+          "|[^*]"                   /* anything but \ and *        */
           ")*"
       "\\*/"
       /* C++ style "//" */
       "|//[^\n]*\n|//[^\n]*" 
     ")"
-                                                  }, 
-  { T_CPP,        "cpp",        R,
-    "#[ \f\r\t\v]*(include|define|)[^\n]*\n"
                                                   },
+  
+  /* Preprocessor (Ref #1 S6.10 */
+  { T_CPP,          "cpp",      R, "^#[ \f\r\t\v]*"         },
+  { T_CPP_IFDEF,    "",         R, "^#[ \f\r\t\v]*ifdef"    },
+  { T_CPP_IFNDEF,   "",         R, "^#[ \f\r\t\v]*ifndef"   },
+  { T_CPP_IF,       "",         R, "^#[ \f\r\t\v]*if"       },
+  { T_CPP_ELIF,     "",         R, "^#[ \f\r\t\v]*elif"     },
+  { T_CPP_ELSE,     "",         R, "^#[ \f\r\t\v]*else"     },
+  { T_CPP_ENDIF,    "",         R, "^#[ \f\r\t\v]*endif"    },
+  { T_CPP_INCLUDE,  "",         R, "^#[ \f\r\t\v]*include"  },
+  { T_CPP_DEFINE,   "",         R, "^#[ \f\r\t\v]*define"   },
+  { T_CPP_UNDEF,    "",         R, "^#[ \f\r\t\v]*undef"    },
+  { T_CPP_LINE,     "",         R, "^#[ \f\r\t\v]*line"     },
+  { T_CPP_ERROR,    "",         R, "^#[ \f\r\t\v]*error"    },
+  { T_CPP_PRAGMA,   "",         R, "^#[ \f\r\t\v]*pragma"   },
+  { T_CPP_LINECONT, "",         R, "^\\\\\n"                },
+  
   /* constant values */
   { T_CONST_FLOAT,"float_lit",  R,
     "^("
@@ -75,7 +92,16 @@ static struct {
     "[uU]?[lL]?[lL]?"               /* suffix                      */
                                                   },
   { T_CONST_STR,  "str_lit",    R,
-    "^L?\"([^\"\n]+|\\\\\"+)*\""
+    "^"
+    "L?"                            /* optional wide string */
+      "\""
+        "("
+          "[^\\\"\n]+"              /* normal char                 */
+          "|\\\\[\\\\\"abfnrtv]"      /* escaped special             */
+          "|\\\\x[[:xdigit:]]{1,2}" /* hexadecimal escape          */
+          "|\\\\0[0-7]{0,2}"        /* octal escape                */
+        ")*"
+      "\""
                                                   },
   { T_CONST_CHAR,  "char_lit",  R,
     "^"
@@ -83,9 +109,9 @@ static struct {
       "'"
         "("
           "[^\\']"                  /* any char except ' or \      */
-          "|\\\\['abfnrtv]"         /* escaped special             */
+          "|\\\\[\\\\'abfnrtv]"     /* escaped special             */
           "|\\\\x[[:xdigit:]]{1,2}" /* hexadecimal escape          */
-          "|\\\\0[0-7]{2}"          /* octal escape                */
+          "|\\\\0[0-7]{0,2}"        /* octal escape                */
         ")*"
       "'"
                                                   },
@@ -97,6 +123,7 @@ static struct {
       "|\\\\U[[:xdigit:]]{8}"       /* "big" ones.                 */
     ")*"
                                                   },
+  
   /* Keywords (Ref #1 S6.4.1.1) */
   { T_AUTO,       "keyword",    R, "^auto"        },
   { T_BREAK,      "keyword",    R, "^break"       },
@@ -199,8 +226,7 @@ static struct {
  */
 static struct {
   unsigned cnt;
-  enum tok lexeme[7]; /* 's' has 7 possible matches:
-                       * short, sizeof, static, signed, struct, switch, $ident */
+  enum tok lexeme[17]; /* '#' for cpp, digraphs */
 } Match[256]; /* one for each u8 */
 
 static void match_add(const char c, enum tok t)
@@ -226,7 +252,21 @@ static void match_build_regexes(void)
   match_add('\r', T_SPACE);
   match_add('\n', T_NEWLINE);
   match_add('/',  T_COMMENT);
+  /* CPP */
   match_add('#',  T_CPP);
+  match_add('#',  T_CPP_IFDEF);
+  match_add('#',  T_CPP_IFNDEF);
+  match_add('#',  T_CPP_IF);
+  match_add('#',  T_CPP_ELIF);
+  match_add('#',  T_CPP_ELSE);
+  match_add('#',  T_CPP_ENDIF);
+  match_add('#',  T_CPP_INCLUDE);
+  match_add('#',  T_CPP_DEFINE);
+  match_add('#',  T_CPP_UNDEF);
+  match_add('#',  T_CPP_LINE);
+  match_add('#',  T_CPP_PRAGMA);
+  match_add('#',  T_CPP_IFDEF);
+  match_add('\\', T_CPP_LINECONT);
   /* octal, decimal, hexadecimal integer constant */
   for (c = '0'; c <= '9'; c++)
     match_add(c,  T_CONST_INT);
@@ -285,26 +325,12 @@ static void match_compile(void)
   }
 }
 
-static void match_build(void)
-{
-  match_build_simple();
-  match_build_regexes();
-  match_compile();
-}
-
-struct token {
-  enum tok      tok;
-  size_t        len;
-  const char   *str;
-  struct token *next;
-};
-
 /**
  * match the single, first longest token (as defined in Lemexe) found in 'buf'
  * of not more than 'buflen' chars
  * @return 0=no match, 1=match recorded in 't'
  */
-static int match_one(const char *buf, size_t buflen, struct token *t)
+static int match_one(const char *buf, size_t buflen, struct lexeme *t)
 {
   t->tok = T;
   if (buflen > 0) {
@@ -341,7 +367,7 @@ static int match_one(const char *buf, size_t buflen, struct token *t)
   return t->tok != T;
 }
 
-static void token_show(const struct token *t)
+void lexeme_show(const struct lexeme *t)
 {
   if (T_NEWLINE == t->tok) {
     fputs("\\n\n", stdout);
@@ -351,27 +377,111 @@ static void token_show(const struct token *t)
   }
 }
 
-static void tokenlist_show(const struct token *t)
+void lexemelist_show(const struct lexeme *t)
 {
   while (t) {
-    token_show(t);
+    lexeme_show(t);
     t = t->next;
   }
+}
+
+static void lexeme_init(struct lexeme *t)
+{
+  t->tok = T;
+  t->len = 0U;
+  t->str = NULL;
+  t->loc.file = NULL;
+  t->loc.line = 1UL;
+  t->loc.off.total = 0UL;
+  t->loc.off.line = 0UL;
+}
+
+static unsigned lexeme_newline_cnt(const struct lexeme *t)
+{
+  unsigned cnt = 0;
+  switch (t->tok) {
+  case T_CPP_LINECONT:
+  case T_NEWLINE:
+    /* always exactly one */
+    cnt = 1;
+    break;
+  case T_COMMENT:
+  case T_CPP:
+    {
+      size_t i = 0;
+      while (i < t->len) {
+        if ('\n' == t->str[i])
+          cnt++;
+        i++;
+      }
+    }
+    break;
+  default:
+    break;
+  }
+  return cnt;
+}
+
+/**
+ * token contains at least one newline.
+ * we want to calculate the current line offset...
+ * return the number of character at the end that are not newline.
+ */
+static unsigned lexeme_lastlinelen(const struct lexeme *t)
+{
+  unsigned cnt = 0;
+  switch (t->tok) {
+  /* NOTE: T_NEWLINE does not count towards line offset */
+  case T_COMMENT:
+  case T_CPP:
+    {
+      size_t i = t->len;
+      while (i--)
+        if ('\n' == t->str[i])
+          break;
+      cnt = t->len - i;
+    }
+    break;
+  default:
+    break;
+  }
+  return cnt;
+}
+
+/**
+ * calculate the contents of curr->loc based on prev->loc
+ */
+static void lexeme_calc_loc(const struct lexeme *prev, struct lexeme *curr)
+{
+  unsigned nlcnt = lexeme_newline_cnt(prev);
+  curr->loc = prev->loc; /* copy whole thing */
+  curr->loc.line += nlcnt;
+  curr->loc.off.total += prev->len;
+  if (nlcnt) {
+    /* prev token contained at least one newline;
+     * calculate our current offset on current line */
+    curr->loc.off.line = lexeme_lastlinelen(prev);
+  } else {
+    /* we're still on the same line as previous token */
+    curr->loc.off.line += prev->len;
+  }
+  assert(curr->loc.line >= prev->loc.line);
 }
 
 /**
  * @return number of bytes of buf consumed; not more than buflen
  */
-static size_t match_all(const char *buf, size_t buflen, struct token **head)
+size_t lex(const char *buf, size_t buflen, struct lexeme **head)
 {
-  struct token scratch;      /* always passed to match_one           */
-  struct token *tail = NULL; /* previous match, used to connect list */
+  struct lexeme scratch;      /* always passed to match_one           */
+  struct lexeme *tail = NULL; /* previous match, used to connect list */
   const char *curr = buf;
   size_t left = buflen;
   *head = NULL;
+  lexeme_init(&scratch);
   /* initial match */
   if (match_one(curr, left, &scratch)) {
-    struct token *t = malloc(sizeof *t);
+    struct lexeme *t = malloc(sizeof *t);
     if (t) {
       *t = scratch;
       *head = t;
@@ -383,6 +493,7 @@ static size_t match_all(const char *buf, size_t buflen, struct token **head)
         t = malloc(sizeof *t);
         if (t) {
           *t = scratch;
+          lexeme_calc_loc(tail, t);
           tail->next = t;
           tail = t;
         }
@@ -428,23 +539,35 @@ static char * file2buf(FILE *f, size_t *len)
   return buf;
 }
 
-static void test_match_stdin(void)
+size_t lex_file(FILE *f, struct lexeme **head)
 {
   size_t buflen = 0;
-  char *buf = file2buf(stdin, &buflen);
-  if (buflen) {
-    struct token *t = NULL;
-    match_all(buf, buflen, &t);
-    tokenlist_show(t);
-  } else {
-    printf("couldn't read stdin!\n");
-  }
+  char *buf = file2buf(f, &buflen);
+  size_t r = 0;
+  if (buflen)
+    r = lex(buf, buflen, head);
+  return r;
 }
+
+int lex_init(void)
+{
+  match_build_simple();
+  match_build_regexes();
+  match_compile();
+  return 1;
+}
+
+#ifdef TEST
 
 int main(void)
 {
-  match_build();
-  test_match_stdin();
+  struct lexeme *l;
+  l = NULL;
+  lex_init();
+  (void)lex_file(stdin, &l);
+  lexemelist_show(l);
   return 0;
 }
+
+#endif
 
