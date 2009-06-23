@@ -1,6 +1,9 @@
 /* ex: set ts=2 et: */
+/*
+ * lexer for C99
+ */
 
-#define _POSIX_SOURCE
+#define _POSIX_SOURCE /* get stdio.h/fileno() */
 
 #include <assert.h>
 #include <stdio.h>
@@ -24,18 +27,28 @@ static struct {
   const char *pattern;
 } Lexeme[T_CNT] = {
   { T,            "",           R, ""             }, /* nothing */
-  { T_SPACE,      "whitespace", R, "^[ \f\r\t\v]\\+"
+  { T_SPACE,      "ws",         R, "^[ \f\r\t\v]\\+"
                                                   },
-  { T_NEWLINE,    "newline",    R, "^\n"          },
+  { T_NEWLINE,    "nl",         R, "^\n"          },
   { T_COMMENT,    "comment",    R,
   /* TODO: multi-line weird preprocessor comment crap;
    * it's going to be a bitch getting it to work in
    * this crappy syntax */
   /* //|//[^\\n]\\+\\)" }, //|\\(\\(//\\|/\\\n/\\)[^\n]*\\(\n\\|\\\n[^\n]*\n\\)\\)\\+ */
     "^\\("
-      "/\\*\\([^\\0]*\\)\\*/"       /* C-style */
-      "\\|"
-      "//[^\\0\n]*\n\\|//[^\\0\n]*" /* C++ style "//" */
+      /* C-style comment, like this */
+      "/\\*" 
+        "\\("
+          "[^*\\]\\+" /* anything but \ and * */
+          "\\|"       /* or */
+          "\\*[^/]"   /* an asterisk followed by something other than / */
+          "\\|"       /* or */
+          "\\\\."     /* escaped something */
+          "\\)*"
+      "\\*/"
+      "\\|" /* or */
+      /* C++ style "//" */
+      "//[^\n]*\n\\|//[^\n]*" 
     "\\)"
                                                   }, 
   { T_CPP,        "cpp",        R,
@@ -57,10 +70,20 @@ static struct {
     "^\\(0[xX][[:xdigit:]]\\+\\|0[0-7]*\\|[1-9][0-9]*\\)[uU]\\?[lL]\\?[lL]\\?"
                                                   },
   { T_CONST_STR,  "str_lit",    R,
-    "^L\\?\"\\([^\"]\\+\\|\\\"\\)*\""
+    "^L\\?\"\\([^\"\n]\\+\\|\\\\\"\\+\\)*\""
                                                   },
   { T_CONST_CHAR,  "char_lit",  R,
-    "^L\\?'\\([^']*\\|\\\\'\\)*'"
+    "^"
+      "L\\?" /* optional wchar_t */
+      "'"
+        "\\("
+          "\\\\'"   /* escaped single char */
+          "\\|"     /* or */
+          "\\\\."   /* escaped anything */
+          "\\|"     /* or */
+          "[^\\']"  /* any single char other than ' or \ */
+        "\\)*"
+      "'"
                                                   },
   { T_IDENT,      "ident",      R,
     "^[_a-zA-Z]"                      /* must start with non-digit */
@@ -133,11 +156,11 @@ static struct {
   { T_GTEQ,       "",           R, "^>="          },
   { T_EQEQ,       "",           R, "^=="          },
   { T_BANGEQ,     "",           R, "^!="          },
-  { T_CARET,      "",           R, "^\\\\^"       },
-  { T_PIPE,       "",           R, "^\\|"         },
+  { T_CARET,      "",           R, "^\\^"         },
+  { T_PIPE,       "",           R, "^|"           },
   { T_AMPAMP,     "",           R, "^&&"          },
   { T_PIPEPIPE,   "",           R, "^||"          },
-  { T_QMARK,      "",           R, "^\\?"         },
+  { T_QMARK,      "",           R, "^?"           },
   { T_COLON,      "",           R, "^:"           },
   { T_SEMIC,      "",           R, "^;"           },
   { T_ELLIPSIS,   "",           R, "^\\.\\.\\."   },
@@ -150,7 +173,7 @@ static struct {
   { T_LTLTEQ,     "",           R, "^<<="         },
   { T_GTGTEQ,     "",           R, "^>>="         },
   { T_AMPEQ,      "",           R, "^&="          },
-  { T_CARETEQ,    "",           R, "^\\\\^="      },
+  { T_CARETEQ,    "",           R, "^\\^="        },
   { T_PIPEEQ,     "",           R, "^\\|="        },
   { T_COMMA,      "",           R, "^,"           },
   { T_HASH,       "",           R, "^#"           },
@@ -170,8 +193,9 @@ static struct {
  */
 static struct {
   unsigned cnt;
-  enum tok lexeme[7]; /* 's' has 7 possible matches: short, sizeof, static, signed, struct, switch, $identifier */
-} Match[256];
+  enum tok lexeme[7]; /* 's' has 7 possible matches:
+                       * short, sizeof, static, signed, struct, switch, $ident */
+} Match[256]; /* one for each u8 */
 
 static void match_add(const char c, enum tok t)
 {
@@ -202,11 +226,13 @@ static void match_build_regexes(void)
   
   match_add('#',  T_CPP);
   
-  for (c = '0'; c <= '9'; c++)
+  for (c = '0'; c <= '9'; c++) {
     match_add(c,  T_CONST_INT);
+  }
   
-  for (c = '0'; c <= '9'; c++)
+  for (c = '0'; c <= '9'; c++) {
     match_add(c,  T_CONST_FLOAT);
+  }
   match_add('.',  T_CONST_FLOAT);
   
   match_add('L',  T_CONST_STR);
@@ -216,10 +242,12 @@ static void match_build_regexes(void)
   match_add('\'', T_CONST_CHAR);
   
   match_add('_',  T_IDENT);
-  for (c = 'a'; c <= 'z'; c++)
+  for (c = 'a'; c <= 'z'; c++) {
     match_add(c,  T_IDENT);
-  for (c = 'A'; c <= 'Z'; c++)
+  }
+  for (c = 'A'; c <= 'Z'; c++) {
     match_add(c,  T_IDENT);
+  }
 }
 
 /**
@@ -231,14 +259,17 @@ static void match_build_simple(void)
   enum tok t;
   for (t = T_AUTO; t < T_CNT; t++) {
     const char *c = Lexeme[t].pattern;
-    c += ('^' == *c);
-    c += ('\\' == *c);
+    c += ('^' == *c); /* skip regex "start of line" anchor, all patterns have this */
+    c += ('\\' == *c); /* get to the first REAL char */
     c += ('\\' == *c);
     assert('\\' != *c);
     match_add(*c, t);
   }
 }
 
+/**
+ * utility function
+ */
 static void rgxdie(const char *descr, const char *pattern, const regex_t *r, int errcode)
 {
   char buf[64];
@@ -269,8 +300,8 @@ static void match_build(void)
 }
 
 struct token {
-  enum tok    tok;
-  size_t  len;
+  enum tok      tok;
+  size_t        len;
   const char   *str;
   struct token *next;
 };
@@ -301,13 +332,12 @@ static int match_one(const char *buf, size_t buflen, struct token *t)
         /* first match is always the correct one */
         int len = m[0].rm_eo;
         //printf("match \"%.*s\"\n", len, buf+m[0].rm_so);
-        if (0 != m[0].rm_so)
+        if (0 != m[0].rm_so || 0 == len)
         {
-          printf("should be entire match, but m[0].rm_so=%d (m[0].rm_eo=%d)\n",
+          fprintf(stderr, "should start at beginning and match (>0) chars but m[0].rm_so=%d (m[0].rm_eo=%d)\n",
             m[0].rm_so, m[0].rm_eo);
           exit(1);
         }
-        assert(len > 0 && "should match something");
         assert((size_t)len <= buflen && "match should be shorter than buf's contents");
         if (len > longest) {
           longest = len;
@@ -325,32 +355,21 @@ static int match_one(const char *buf, size_t buflen, struct token *t)
   return t->tok != T;
 }
 
-#if 0
-static void token_dump(const struct token *t)
-{
-  printf("token tok=%d len=%u str=\"%.*s\" next=%p\n",
-    (int)t->tok, (unsigned)t->len, (unsigned)t->len, t->str, (void *)t->next);
-}
-#endif
-
-#if 0
-static void tokenlist_dump(const struct token *t)
-{
-  while (t) {
-    token_dump(t);
-    t = t->next;
-  }
-}
-#endif
-
 static void token_show(const struct token *t)
 {
-  if (Lexeme[t->tok].descr[0]) {
-    printf("%s(%.*s)\n",
-      Lexeme[t->tok].descr, (unsigned)t->len, t->str);
-  } else {
-    printf("%.*s\n",
-      (unsigned)t->len, t->str);
+  switch (t->tok) {
+  case T_NEWLINE:
+    fputs("\\n\n", stdout);
+    break;
+  default:
+    if (Lexeme[t->tok].descr[0]) {
+      printf("%s(%.*s)",
+        Lexeme[t->tok].descr, (unsigned)t->len, t->str);
+    } else {
+      printf("(%.*s)",
+        (unsigned)t->len, t->str);
+    }
+    break;
   }
 }
 
@@ -362,6 +381,9 @@ static void tokenlist_show(const struct token *t)
   }
 }
 
+/**
+ * @return number of bytes of buf consumed; not more than buflen
+ */
 static size_t match_all(const char *buf, size_t buflen, struct token **head)
 {
   struct token scratch; /* always passed to match_one */
@@ -395,28 +417,8 @@ static size_t match_all(const char *buf, size_t buflen, struct token **head)
   return buflen - left;
 }
 
-#if 0
-static void test_match_one(void)
-{
-  struct token t;
-  {
-    const char str[] = "auto ";
-    assert(match_one(str, sizeof(str) - 1, &t));
-    assert(T_AUTO   == Lexeme[t.tok].id);
-    assert(4  == t.len);
-    assert(str    == t.str);
-  }
-  { /* ensure longest match occurs */
-    const char str[] = "<<==>>";
-    assert(match_one(str, sizeof(str) - 1, &t));
-    assert(T_LTLTEQ == Lexeme[t.tok].id);
-    assert(3  == t.len);
-    assert(str    == t.str);
-  }
-}
-#endif
-
 /**
+ * utility function
  * read contents of FILE into a buffer
  */
 static char * file2buf(FILE *f, size_t *len)
@@ -456,6 +458,9 @@ static void test_match_stdin(void)
   if (buflen) {
     struct token *t = NULL;
     size_t match;
+#if 0
+    printf("buflen=%lu\n", (unsigned long)buflen);
+#endif
     match = match_all(buf, buflen, &t);
     tokenlist_show(t);
   } else {
