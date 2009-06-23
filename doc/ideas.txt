@@ -32,6 +32,7 @@ Determine useful metrics about program...
 
 generate useful visualizations from source
   hmmm maybe do this using something like c2xml(?)
+  generate graphs of function output based on values of inputs
   flow graphs
     dependency/interdependency mapping
 

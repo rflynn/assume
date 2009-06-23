@@ -1,0 +1,215 @@
+
+* lex tokens
+  
+  input:
+    * buffer containing C translation unit
+  
+  output:
+    * list of lexemes
+  
+  algorithm:
+    while not end of buffer
+      if any patterns match
+        find longest matching pattern
+        attach to token list
+        advance buffer
+    
+  potential errors:
+    parse error
+      invalid characters in source
+
+* combine lines ending with '\'
+
+  think about this...
+    this allows us to define multiline cpp macros, but then
+    collapse them into a single line for text replacement,
+    simplifying the cpp.
+    
+    #define FOO [1,\
+     2]
+    
+    becomes
+    
+    #define FOO [1, 2]
+    
+    this makes life easy for the line-oriented cpp, but it
+    means that long macros (which are hideous but nonetheless
+    exist) end up as some unreadable 1-line abomination
+    
+      do { do { if (this) { that; } else { something_else; } } while(0) } while(0)
+    
+    it's of course even worse when macros are multiple layers deep.
+    
+    this produces a disconnect between the source code the programmer
+    sees and what the parser sees. this can make debugging simple
+    issues like a missing/misplaced '}' in a macro very difficult.
+    
+    i would like to structure my lexer/parser in such a fashion that
+    text replacement is not performed, but where macros are defined like
+    pointers, whereby when we reach one we begin parsing again inside the
+    macro; and likewise upon exiting.
+    
+    this will be slightly more complicated, although if implemented
+    would allow much more clear macro error messages, as the full context
+    of the error (a combination of macro content in addition to the
+    particular usage context) would be available.
+    
+    so, back to the point, how do we implement this so that we can
+    
+      keep macro contents on multiple, readable lines
+      ... and yet allow macro contents to be parsable
+      ...and yet keep tokens in a sane order.
+    
+    given input
+    
+      A
+      #define B C\
+        D
+      E
+  
+    we get lexemes:
+    
+      A -> \n ->
+      #define -> " " -> B -> " " -> C -> \ -> \n ->
+      " " -> D -> \n ->
+      E
+    
+    we want to remove the macro from the normal flow of the source
+    so that the parser does not try to parse it inline, but it is
+    still accessible when the symbol is encountered later
+    
+      A -> \n -> E
+    
+      #define -> " " -> B -> " " -> C -> \ -> \n ->
+      " " -> D -> \n ->
+    
+    this could get complicated though. let's consider other cases:
+    
+      #if/#ifdef
+      #elif/#else
+      #endif
+        in order to properly decide which branch is taken, we must
+        have the following input:
+    
+        * list of external macros, i.e. defined by environment, cmdline,
+          target compiler, etc.
+        * keep track of current context as to what is currently defined
+        
+        hmmm. the problem with this approach is becoming evident. i
+        will end up writing a macro interpreter. what is the alternative
+        to this unacceptable prospect?
+        
+          * bail. use the traditional, unhelpful cpp way.
+            i refuse to do this; this is not interesting or useful.
+        
+          * accept your fate. write a macro interpreter.
+            the problem with this is that it won't find bugs
+            in macros that aren't used. for example:
+          
+            #define FOO
+            #ifdef FOO
+            # define BAR {0}
+            #else
+            # define BAR {0
+            #endif
+            int i[] = BAR;
+            
+            if i only evaluate the "current" macros then my program
+            can never find the parse error in the program that exists
+            only iff FOO is undefined.
+            
+            i don't like this. i want to be fucking thorough.
+            
+          * evaluate source code for ALL POSSIBLE COMBINATIONS of
+            macro states.
+            
+            this is an interesting concept; besides, isn't searching
+            mindlessly through combination/permutations what computers
+            do best? this could enable us to detect bugs that exist only
+            in obscure situations.
+            
+            potential problems with this:
+
+              * considering just defined(FOO) with 2 outcomes,
+                even a few dozen 
+            
+              * platform-specific macros.
+                consider:
+              
+                #ifdef WIN32
+                # include <winsock2.h>
+                #else
+                # include <sys/socket.h>
+                #endif
+              
+              if i run this on Windows i will get a complaint about <sys/socket.h>
+              and vice-versa.
+              
+              i may be able to mitigate this with a hybridization of the
+              interpreter and "all combinations" approaches, although this
+              might be over-complicated in implementation and complex to use.
+              
+              perhaps we honor #defines from <system.headers> and evaluate all
+              combinations of "application-specific.h" ones? that's an interesting
+              idea, but will probably have further complications...
+              
+
+      #undef
+        the same symbol may be #define'd and #undef'd multiple
+        times throughout a document; how do we most simply represent
+        a symbol's "lifetime?"
+
+        possibilities:
+          store the "range"
+  
+  input:
+    * list of lexemes
+  
+  output:
+    * 
+
+  potential errors:
+    non-empty file does not end in "\n"
+
+* 
+  A source file shall not end in a partial preprocessing
+  token or in a partial comment.
+  
+  Each comment is replaced by one space character.
+
+* preprocessing
+  
+  input
+    * list of include paths
+    * dictionary of preprocessed header files
+    * preprocessor token dictionary, populated
+      with external -Ddefines
+  
+  output
+    * 
+    
+  psuedocode
+    forall #include
+      if does not exist in dictionary
+        search include path for header
+        if does not exist
+          fatal error
+        else
+          parse header
+          add to dictionary
+
+*
+  adjacent string literals are concatenated
+
+  potential errors/warnings:
+    string too long
+
+*
+  whitespace is disregarded
+
+*
+  translate strings into literals
+
+*
+  
+

@@ -1,0 +1,7 @@
+
+Random Musings About How/Why/What to Calculate Automated Refactoring
+
+utility functions
+  functions that only access standard library functions;
+  none of the user-defined stuff
+

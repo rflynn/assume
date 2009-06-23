@@ -1,6 +1,6 @@
    __      ____    ____  __  __    ___ ___      __   
  /'__`\   /',__\  /',__\/\ \/\ \ /' __` __`\  /'__`\ 
-/\ \L\.\_/\__, `\/\__, `\ \ \_\ \/\ \/\ \/\ \/\  __/ 
+/\ \_\.\_/\__, `\/\__, `\ \ \_\ \/\ \/\ \/\ \/\  __/ 
 \ \__/.\_\/\____/\/\____/\ \____/\ \_\ \_\ \_\ \____\
  \/__/\/_/\/___/  \/___/  \/___/  \/_/\/_/\/_/\/____/
                                                      
@@ -10,7 +10,7 @@ explore code as data.
 hopefully write static analysis tool.
 want to explore C source via HLL (Ocaml)
 
-Not close to functional.
+git clone git://github.com/pizza/assume.git
 
 In the meantime, here is some reading material:
 
@@ -19,11 +19,12 @@ In the meantime, here is some reading material:
 
 * http://c2xml.sourceforge.net/
   This is a straight-forward tool and a really good idea.
-  Parsing C isn't easy.
+  Sadly it's Windows-only.
+  XML is more readily manipulable than C source.
 
 * http://splint.org/
   Modern UNIX "lint"; infamous for its copious output.
-  Ironically, it's written in C(!) What were they thinking?
+  Written in C(!)
 
 * http://mtc.epfl.ch/software-tools/blast/
   BLAST a static analyzer from Berkely. Haven't figured out
@@ -31,7 +32,7 @@ In the meantime, here is some reading material:
 
 * http://www.kernel.org/pub/software/devel/sparse/
   Tool written by Linus Torvalds to find common bugs in
-  Linux kernel drivers.
+  Linux kernel drivers. Written in C, of course.
 
 * http://en.wikipedia.org/wiki/Static_code_analysis
   "It has been proven that, barring some hypothesis that the
@@ -40,6 +41,6 @@ In the meantime, here is some reading material:
   violation of a specification on the final result of a
   program, is undecidable: there is no mechanical method that
   can always answer truthfully whether a given program may or
-  may not exhibit runtime errors." -- that's what keeps we
+  may not exhibit runtime errors." -- that's what keeps us
   programmers in business baby!
 
