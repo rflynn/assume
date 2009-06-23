@@ -41,11 +41,6 @@ then
   exit 1
 fi
 
-test_lex '6.4.6 Punctuators'  '|'       '(|)\n'
-test_lex '6.4.6 Punctuators'  '||'      '(||)\n'
-test_lex '6.4.6 Punctuators'  '|||'     '(||)(|)\n'
-test_lex '6.4.6 Punctuators'  '||=|'    '(|)(|=)(|)\n'
-
 
 echo "FIXME: cpp multiline \ stuff broken, fix"
 
@@ -54,88 +49,6 @@ test_lex 'Whitespace' "a b"     "ident(a)ws( )ident(b)\\n"
 #test_lex 'Whitespace' "\f"      "whitespace(\f)"
 #test_lex 'Whitespace' "\v"      "whitespace(\v)"
 #test_lex 'Whitespace' "\r"      "whitespace(\r)"
-
-echo "6.4.6 Punctuators"
-test_lex '6.4.6 Punctuators'  '['       '([)\n'
-test_lex '6.4.6 Punctuators'  ']'       '(])\n'
-test_lex '6.4.6 Punctuators'  '.'       '(.)\n'
-test_lex '6.4.6 Punctuators'  '->'      '(->)\n'
-test_lex '6.4.6 Punctuators'  '>>='     '(>>=)\n'
-test_lex '6.4.6 Punctuators'  '&&&&&'   "(&&)(&&)(&)\n"
-#test_lex '6.4.6 Punctuators'  '##'      '##'
-test_lex '6.4.6 Punctuators'  '+'       '(+)\n'
-test_lex '6.4.6 Punctuators'  '++'      '(++)\n'
-test_lex '6.4.6 Punctuators'  '+++'     '(++)(+)\n'
-test_lex '6.4.6 Punctuators'  '--'      '(--)\n'
-test_lex '6.4.6 Punctuators'  '--->>>'  "(--)(->)(>>)\n"
-test_lex '6.4.6 Punctuators'  '<<<===>>>' "(<<)(<=)(==)(>>)(>)\n"
-# since we are explicitly using regex, test punctuators that contain special regex characters
-# for proper escapes
-test_lex '6.4.6 Punctuators'  '['       '([)\n'
-test_lex '6.4.6 Punctuators'  '[['      '([)([)\n'
-test_lex '6.4.6 Punctuators'  ']'       '(])\n'
-test_lex '6.4.6 Punctuators'  ']]'      '(])(])\n'
-test_lex '6.4.6 Punctuators'  '[][]'    '([)(])([)(])\n'
-test_lex '6.4.6 Punctuators'  '^'       '(^)\n'
-test_lex '6.4.6 Punctuators'  '^^'      '(^)(^)\n'
-test_lex '6.4.6 Punctuators'  '^^^'     '(^)(^)(^)\n'
-test_lex '6.4.6 Punctuators'  '^='      '(^=)\n'
-test_lex '6.4.6 Punctuators'  '^=^'     '(^=)(^)\n'
-test_lex '6.4.6 Punctuators'  '?'       '(?)\n'
-test_lex '6.4.6 Punctuators'  '??'      '(?)(?)\n'
-test_lex '6.4.6 Punctuators'  '???'     '(?)(?)(?)\n'
-test_lex '6.4.6 Punctuators'  '.'       '(.)\n'
-test_lex '6.4.6 Punctuators'  '..'      '(.)(.)\n'
-test_lex '6.4.6 Punctuators'  '...'     '(...)\n'
-test_lex '6.4.6 Punctuators'  '....'    '(...)(.)\n'
-test_lex '6.4.6 Punctuators'  '.....'   '(...)(.)(.)\n'
-test_lex '6.4.6 Punctuators'  '......'  '(...)(...)\n'
-# The program fragment x+++++y is parsed as x ++ ++ + y,
-test_lex '6.4.1 Example 2' 'x+++++y'  'ident(x)(++)(++)(+)ident(y)\n'
-
-echo "6.4.2 Identifiers"
-test_lex '6.4.2 Identifiers' '_'                      'ident(_)\n'
-test_lex '6.4.2 Identifiers' '__'                     'ident(__)\n'
-test_lex '6.4.2 Identifiers' '___'                    'ident(___)\n'
-test_lex '6.4.2 Identifiers' '_____________________'  'ident(_____________________)\n'
-test_lex '6.4.2 Identifiers' '__FILE__'               'ident(__FILE__)\n'
-test_lex '6.4.2 Identifiers' '__LINE__'               'ident(__LINE__)\n'
-test_lex '6.4.2 Identifiers' '__func__'               'ident(__func__)\n'
-test_lex '6.4.2 Identifiers' 'a'                      'ident(a)\n'
-test_lex '6.4.2 Identifiers' '_0'                     'ident(_0)\n'
-test_lex '6.4.2 Identifiers' '_a0'                    'ident(_a0)\n'
-test_lex '6.4.2 Identifiers' '_a0a'                   'ident(_a0a)\n'
-
-echo "6.4.3 Universal character names"
-test_lex '6.4.2 Identifiers' '_\u0123'                'ident(_\u0123)\n'
-test_lex '6.4.2 Identifiers' 'a\u4567'                'ident(a\u4567)\n'
-test_lex '6.4.2 Identifiers' 'a\u0123\u4567'          'ident(a\u0123\u4567)\n'
-test_lex '6.4.2 Identifiers' 'a\U01234567'            'ident(a\U01234567)\n'
-test_lex '6.4.2 Identifiers' 'a\U01234567\u9ABC'      'ident(a\U01234567\u9ABC)\n'
-test_lex '6.4.2 Identifiers' '_\U89ABCDEF\u9ABC'      'ident(_\U89ABCDEF\u9ABC)\n'
-
-echo "6.4.4.3 Enum constants"
- 
-echo "6.4.5 Character constants"
-test_lex '6.4.5 Character constants'  "''"          "char_lit('')\n"
-test_lex '6.4.5 Character constants'  "L''"         "char_lit(L'')\n"
-test_lex '6.4.5 Character constants'  "'\\x0'"       "char_lit('\\x0')\n"
-test_lex '6.4.5 Character constants'  "'\\x00'"      "char_lit('\\x00')\n"
-test_lex '6.4.5 Character constants'  "'\\x000'"     "char_lit('\\x000')\n"
-test_lex '6.4.5 Character constants'  "'\\x0000'"    "char_lit('\\x0000')\n"
-test_lex '6.4.5 Character constants'  "'\\a'"        "char_lit('\\a')\n"
-test_lex '6.4.5 Character constants'  "'\\b'"        "char_lit('\\b')\n"
-test_lex '6.4.5 Character constants'  "'\\f'"        "char_lit('\\f')\n"
-test_lex '6.4.5 Character constants'  "'\\n'"        "char_lit('\\n')\n"
-test_lex '6.4.5 Character constants'  "'\\r'"        "char_lit('\\r')\n"
-test_lex '6.4.5 Character constants'  "'\\t'"        "char_lit('\\t')\n"
-test_lex '6.4.5 Character constants'  "'\\v'"        "char_lit('\\v')\n"
-test_lex '6.4.5 Character constants'  "'\\xA\\xB'"    "char_lit('\\xA\\xB')\n"
-test_lex '6.4.5 empty string'         '""'          'str_lit("")\n'
-test_lex '6.4.5 empty wide string'    'L""'         'str_lit(L"")\n'
-test_lex '6.4.5 string'               '"a"'         'str_lit("a")\n'
-test_lex '6.4.5 string escape'        '"\\\\"'      'str_lit("\\\\")\n'
-test_lex '6.4.5 string escape'        '"\\\""'      'str_lit("\\\"")\n'
 
 echo "6.4.1 Keywords"
 test_lex '6.4.1 Keywords' 'auto'        'keyword(auto)\n'
@@ -175,6 +88,28 @@ test_lex '6.4.1 Keywords' 'while'       'keyword(while)\n'
 test_lex '6.4.1 Keywords' '_Bool'       'keyword(_Bool)\n'
 test_lex '6.4.1 Keywords' '_Complex'    'keyword(_Complex)\n'
 test_lex '6.4.1 Keywords' '_Imaginary'  'keyword(_Imaginary)\n'
+
+echo "6.4.2 Identifiers"
+test_lex '6.4.2 Identifiers' '_'                      'ident(_)\n'
+test_lex '6.4.2 Identifiers' '__'                     'ident(__)\n'
+test_lex '6.4.2 Identifiers' '___'                    'ident(___)\n'
+test_lex '6.4.2 Identifiers' '_____________________'  'ident(_____________________)\n'
+test_lex '6.4.2 Identifiers' '__FILE__'               'ident(__FILE__)\n'
+test_lex '6.4.2 Identifiers' '__LINE__'               'ident(__LINE__)\n'
+test_lex '6.4.2 Identifiers' '__func__'               'ident(__func__)\n'
+test_lex '6.4.2 Identifiers' 'a'                      'ident(a)\n'
+test_lex '6.4.2 Identifiers' '_0'                     'ident(_0)\n'
+test_lex '6.4.2 Identifiers' '_a0'                    'ident(_a0)\n'
+test_lex '6.4.2 Identifiers' '_a0a'                   'ident(_a0a)\n'
+
+echo "6.4.3 Universal character names"
+test_lex '6.4.2 Identifiers' '_\u0123'                'ident(_\u0123)\n'
+test_lex '6.4.2 Identifiers' 'a\u4567'                'ident(a\u4567)\n'
+test_lex '6.4.2 Identifiers' 'a\u0123\u4567'          'ident(a\u0123\u4567)\n'
+test_lex '6.4.2 Identifiers' 'a\U01234567'            'ident(a\U01234567)\n'
+test_lex '6.4.2 Identifiers' 'a\U01234567\u9ABC'      'ident(a\U01234567\u9ABC)\n'
+test_lex '6.4.2 Identifiers' '_\U89ABCDEF\u9ABC'      'ident(_\U89ABCDEF\u9ABC)\n'
+
 
 echo "6.4.4 Constants"
 
@@ -237,6 +172,74 @@ test_lex '6.4.4.2 Floating constant (hex)'  '0x3.243F6A88p+03'  'float_lit(0x3.2
 test_lex '6.4.4.2 Floating constant'        '0e0'               'float_lit(0e0)\n'
 test_lex '6.4.4.2 Floating constant'        '0e+0'              'float_lit(0e+0)\n'
 test_lex '6.4.4.2 Floating constant'        '0e-0'              'float_lit(0e-0)\n'
+
+echo "6.4.4.3 Enum constants"
+ 
+echo "6.4.5 Character constants"
+test_lex '6.4.5 Character constants'  "''"          "char_lit('')\n"
+test_lex '6.4.5 Character constants'  "L''"         "char_lit(L'')\n"
+test_lex '6.4.5 Character constants'  "'\\x0'"       "char_lit('\\x0')\n"
+test_lex '6.4.5 Character constants'  "'\\x00'"      "char_lit('\\x00')\n"
+test_lex '6.4.5 Character constants'  "'\\x000'"     "char_lit('\\x000')\n"
+test_lex '6.4.5 Character constants'  "'\\x0000'"    "char_lit('\\x0000')\n"
+test_lex '6.4.5 Character constants'  "'\\a'"        "char_lit('\\a')\n"
+test_lex '6.4.5 Character constants'  "'\\b'"        "char_lit('\\b')\n"
+test_lex '6.4.5 Character constants'  "'\\f'"        "char_lit('\\f')\n"
+test_lex '6.4.5 Character constants'  "'\\n'"        "char_lit('\\n')\n"
+test_lex '6.4.5 Character constants'  "'\\r'"        "char_lit('\\r')\n"
+test_lex '6.4.5 Character constants'  "'\\t'"        "char_lit('\\t')\n"
+test_lex '6.4.5 Character constants'  "'\\v'"        "char_lit('\\v')\n"
+test_lex '6.4.5 Character constants'  "'\\xA\\xB'"    "char_lit('\\xA\\xB')\n"
+test_lex '6.4.5 empty string'         '""'          'str_lit("")\n'
+test_lex '6.4.5 empty wide string'    'L""'         'str_lit(L"")\n'
+test_lex '6.4.5 string'               '"a"'         'str_lit("a")\n'
+test_lex '6.4.5 string escape'        '"\\\\"'      'str_lit("\\\\")\n'
+test_lex '6.4.5 string escape'        '"\\\""'      'str_lit("\\\"")\n'
+
+echo "6.4.6 Punctuators"
+test_lex '6.4.6 Punctuators'  '['       '([)\n'
+test_lex '6.4.6 Punctuators'  ']'       '(])\n'
+test_lex '6.4.6 Punctuators'  '.'       '(.)\n'
+test_lex '6.4.6 Punctuators'  '->'      '(->)\n'
+test_lex '6.4.6 Punctuators'  '>>='     '(>>=)\n'
+test_lex '6.4.6 Punctuators'  '&&&&&'   "(&&)(&&)(&)\n"
+#test_lex '6.4.6 Punctuators'  '##'      '##'
+test_lex '6.4.6 Punctuators'  '+'       '(+)\n'
+test_lex '6.4.6 Punctuators'  '++'      '(++)\n'
+test_lex '6.4.6 Punctuators'  '+++'     '(++)(+)\n'
+test_lex '6.4.6 Punctuators'  '--'      '(--)\n'
+test_lex '6.4.6 Punctuators'  '--->>>'  "(--)(->)(>>)\n"
+test_lex '6.4.6 Punctuators'  '<<<===>>>' "(<<)(<=)(==)(>>)(>)\n"
+# since we are explicitly using regex, test punctuators that contain special regex characters
+# for proper escapes
+test_lex '6.4.6 Punctuators'  '['       '([)\n'
+test_lex '6.4.6 Punctuators'  '[['      '([)([)\n'
+test_lex '6.4.6 Punctuators'  ']'       '(])\n'
+test_lex '6.4.6 Punctuators'  ']]'      '(])(])\n'
+test_lex '6.4.6 Punctuators'  '[][]'    '([)(])([)(])\n'
+test_lex '6.4.6 Punctuators'  '^'       '(^)\n'
+test_lex '6.4.6 Punctuators'  '^^'      '(^)(^)\n'
+test_lex '6.4.6 Punctuators'  '^^^'     '(^)(^)(^)\n'
+test_lex '6.4.6 Punctuators'  '^='      '(^=)\n'
+test_lex '6.4.6 Punctuators'  '^=^'     '(^=)(^)\n'
+test_lex '6.4.6 Punctuators'  '?'       '(?)\n'
+test_lex '6.4.6 Punctuators'  '??'      '(?)(?)\n'
+test_lex '6.4.6 Punctuators'  '???'     '(?)(?)(?)\n'
+test_lex '6.4.6 Punctuators'  '.'       '(.)\n'
+test_lex '6.4.6 Punctuators'  '..'      '(.)(.)\n'
+test_lex '6.4.6 Punctuators'  '...'     '(...)\n'
+test_lex '6.4.6 Punctuators'  '....'    '(...)(.)\n'
+test_lex '6.4.6 Punctuators'  '.....'   '(...)(.)(.)\n'
+test_lex '6.4.6 Punctuators'  '......'  '(...)(...)\n'
+test_lex '6.4.6 Punctuators'  '|'       '(|)\n'
+test_lex '6.4.6 Punctuators'  '||'      '(||)\n'
+test_lex '6.4.6 Punctuators'  '|||'     '(||)(|)\n'
+test_lex '6.4.6 Punctuators'  '||=|'    '(||)(=)(|)\n'
+# The program fragment x+++++y is parsed as x ++ ++ + y,
+test_lex '6.4.1 Example 2' 'x+++++y'  'ident(x)(++)(++)(+)ident(y)\n'
+
+echo "6.4.7 Header Names(?)"
+echo "6.4.8 Preprocessing Numbers(?)"
 
 echo "6.4.9 Comments"
 test_lex '6.4.9 Comments (c-style)' "/**/" "comment(/**/)\n"
