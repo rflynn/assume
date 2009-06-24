@@ -512,7 +512,7 @@ size_t lex(const char *buf, size_t buflen, struct lexeme **head)
  */
 static char * file2buf(FILE *f, size_t *len)
 {
-  size_t buflen = 4096;
+  size_t buflen = 32 * 1024;
   char *buf = malloc(buflen);
   *len = 0;
   if (buf) {

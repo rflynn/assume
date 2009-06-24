@@ -1,6 +1,6 @@
 # ex: set ts=8 noet:
 
-CFLAGS= -O0 -W -Wall -Werror -pedantic -g -std=c89 
+CFLAGS= -Os -W -Wall -Werror -pedantic -g -std=c89 
 LDFLAGS = -g
 
 parse:
