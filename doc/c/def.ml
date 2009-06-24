@@ -157,6 +157,8 @@ conditional-expression
       None | Inline
       ;;
 
+    type op = string;;
+
     (*
      * hmm, can't really use the standard's definition,
      * BNF-style syntax doesn't work in OCaml because Ocaml
@@ -165,11 +167,22 @@ conditional-expression
     type expr =
         Constant of string
       | Variable of string
+      | Unary    of op * expr
       | Cast     of string * expr
-      | Unary    of string * expr
-      | Binary   of expr * string * expr
+      | Binary   of expr * op * expr
+      | Assign   of expr * op * expr
       | Ternary  of expr * expr * expr
-      | Assign   of expr * string * expr
+      ;;
+
+    let rec show = function
+      | Constant(c)  -> c
+      | Variable(v)  -> v
+      | Unary(op, e) -> op ^ show(e)
+      | Cast(typ, e) -> "((" ^ typ ^ ")" ^ show(e) ^ ")"
+      | Binary(a, "+", b) -> "(" ^ show(a) ^ " + " ^ show(b) ^ ")"
+      | Binary(a, op, b) -> "(" ^ show(a) ^ " " ^ op ^ " " ^ show(b) ^ ")"
+      | Assign(dst, op, src) -> show(dst) ^ " " ^ op ^ " " ^ show(src)
+      | Ternary(e, iftrue, iffalse) -> "(" ^ show(e) ^ " ? " ^ show(iftrue) ^ " : " ^ show(iffalse) ^ ")"
       ;;
 
     (*
