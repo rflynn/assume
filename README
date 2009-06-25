@@ -4,33 +4,22 @@
    \__,_|___/___(_)__,_(_)_| |_| |_|\___|
 
 "Testing shows the presence, not the absence, of bugs."
-  -- Edsger W. Dijkstra
-
-Define axiomatic model for "sane" software.
-Match model against real-world software parse tree.
-Detect incorrect/unsane/undefined/overly-complex constructs.
-Produce human-readable instructions.
-If lint is a blacklist, this is a whitelist.
+                                -- Edsger W. Dijkstra
 
 git clone git://github.com/pizza/assume.git
 
-In the meantime, here is some reading material:
+assume is to lint as a whitelist is to a blacklist.
 
-* http://en.wikipedia.org/wiki/Static_code_analysis
+Goals
 
-  "It has been proven that, barring some hypothesis that the
-  state space of programs is finite and small, finding all
-  possible run-time errors, or more generally any kind of
-  violation of a specification on the final result of a
-  program, is undecidable: there is no mechanical method that
-  can always answer truthfully whether a given program may or
-  may not exhibit runtime errors."
+  * Define axiomatic software model.
+  * Validate parse tree against model.
+  * Detect incorrect/unsane/undefined/complex constructs.
+  * Produce human-readable instructions for correcting them.
   
-  Absolutely true; it is impossible to know whether or not
-  a program will i.e. crash given a certain combination of
-  input.
-  
-  However, it is possible to know if it *can* crash by
-  enumerating all crashing conditions and assuring that they
-  are avoided.
+References
+
+  * http://en.wikipedia.org/wiki/Lint_(software)
+  * http://en.wikipedia.org/wiki/Blacklist_(computing)
+  * http://en.wikipedia.org/wiki/Whitelist
 

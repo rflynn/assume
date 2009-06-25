@@ -17,31 +17,64 @@ Assert:
 Axiomatic Software Model
 -------------------------
 
+Let a programming language P be the interface to a virtual machine
+for which the following concepts are well-defined:
 
-Scope (Language-defined)
+  scoping
+    type(s)
+      storage
+      values
+      functions
+
+The internals of the virtual machine providing these features is
+irrelevant in theory, but in practice should be considered concerning
+language design.
+
+Consider integer arithmetic as a familiar, simple programming language:
+
+  scoping: none
+    types: integer
+      storage: one single integer
+      values: literal integers
+      functions: + - * /
+
+
+Scoping
+  
+  Let us define complexity as the number of possible interactions
+  between components. Complexity rises exponentially with the number
+  of exposed components.
   
   "Controlling complexity is the essence of computer programming."
                                           -- Brian Kernighan
   
-  Scope is the definition of accessibility from one part of a program
-  to another.
+  The purpose of scoping is to control complexity by reducing the
+  exposure between components of a program. In math terms, it
+  defines the "domain" of a program's components.
   
-  The purpose of scope is to reduce software's complexity, where
-  complexity is the number of combinations of interactions between
-  software objects.
+  In the absence of scoping any part of a program may modify any
+  other part.
   
   Every scope instance partitions a program into two sets: those that
   can access objects at that scope and those that cannot.
-  
+
+  Let such partitions be called Software Objects.
   
   Object
   
-    An object is a tuple of (Private, Public) members, where Private
-    and Public are sets of objects differing in their scope.
+    FIXME: Hmmm, definition needs to be recursive. Work on the
+      formal definition.
+
+    Given Program P be the set of components
+      Let Object O be the non-empty subset of {C} that share scope
+    
+    An object can be defined as a tuple of (Private, Public) members,
+    where Private and Public are sets of objects differing in their
+    scope.
   
     +- obj ---+
-    | private | members inaccessible outside
-    | public <-> accessible outside
+    | private | members inaccessible to other objects
+    | public <-> accessible by other objects
     +---------+
     
     The simplest software objects in computing are really bits, but
@@ -49,17 +82,22 @@ Scope (Language-defined)
     
     In C they are the built-in scalar types, i.e.
     
+      void
       char
       int
       long
+      float
+      double
     
-      These software objects contain a set of bits, public to all.
+      These software objects constitute a vector of bits of uniform
+      scope. If you can read one you can read all, if you can write
+      one bit then you can write all.
   
   Scope affects every object. Every object in a program is assigned
   a scope, either implicitly or explicitly. 
 
 
-Type (Language-defined)
+Type
   
   <Scope> <Type>
   
@@ -69,14 +107,36 @@ Type (Language-defined)
   results of all operations.
 
 
-Identifier (Language-defined)
+Literal or Constant
   
-  <Scope> <Symbol>
+  <Scope> <Type> <Literal>
   
-  a.k.a Symbol; abstract reference to a lower-level object
+  0. reference known type
+  1. compatible type
+    if explicit type
+      type and literal must be compatible with one another
+  2. if implicit type
+      must only one and only one possible interpretation of type
+  
+  the declaration of a constant/literal value constitutes
+  a value "source" vs, which is the first item in a chain of
+  one or more value states throughout the lifetime of that
+  value.
+
+  
+Value ::= <Storage> | <Literal Or Constant>
+  
+  Let Value now refer to any object that yields a value;
+  Storage or a Literal or Constant value
 
 
-Declare Storage
+Storage
+
+  Let Storage S(Scope, Type, Identifier) be an interface
+  implementing the following functions
+
+    Value read(Scope, Type)
+    ()    write(Scope, Type, Value)
   
   <Scope> <Type> <Identifier>
   
@@ -88,47 +148,63 @@ Declare Storage
   storage declaration must...
   
     scope
+      0. be within a valid scope, given the context
     
     type
-      0. reference know type
+      0. reference an existing type
     
     identifier
       0. identifier is (namespace) unique
+    
+    overall
+      0. 
 
 
-Type ::= <BuiltIn Type> | <Declared Type>
+Function(Storage out, Value in)
+  
+  out <- f(in)
+  
+  An abstraction whereby input Value(s) are transformed and
+  written to Storage out.
+  
+  "Statements" and "Procedures" that operate by "side effects"
+  are in fact functions that where the input and output implicitly
+  include the entire scope in which the function resides.
+  
+  Consider:
+  
+  static int i = 1;
+  static void incr(void)
+  {
+    i = i + 1;
+    printf("i <- %d\n", i);
+  }
+  
+  all such programs can be re-written as a function in the following
+  manner:
+  
+  static struct translation_unit_scope { FILE *out; int i; } Global = { stdout, 1 };
+  static void incr(struct translation_unit_scope *g)
+  {
+    g->i = g->i + 1;
+    fprintf(g->out, "i <- %d\n", g->i);
+  }
+  
+  the point is to illustrate explicitly what happens implicitly in the context
+  of a "procedure" -- that 
+  
+  alternatively, incr() can also be written like so:
+  
+  static struct translation_unit_scope incr(const struct translation_unit_scope *g)
+  {
+    struct translation_unit_scope g2 = {
+      g->out,
+      g->i + 1
+    }
+    fprintf(g2->out, "i <- %d\n", g2->i);
+    return g2;
+  }
 
-
-Declare Storage
-  
-  <Scope> <Type> <Identifier>
-  
-  i.e.
-  
-    typedef unsigned int uint;
-    struct foo { int i; };
-  
-  0. reference know type(s)
-  
-
-Declare Literal or Constant
-  
-  [<Type>] <Literal>
-  
-  0. reference known type
-  1. compatible type
-    if explicit type
-      type and literal must be compatible with one another
-  2. if implicit type
-      must only one and only one possible interpretation of type
-
-  the declaration of a constant/literal value constitutes
-  a value "source" vs, which is the first item in a chain of
-  one or more value states throughout the lifetime of that
-  value.
-
-  
-Value ::= <Storage> | <Literal Or Constant>
 
 
 Move(Storage dst, Value src)
@@ -170,15 +246,30 @@ Move(Storage dst, Value src)
     where foo is dst operand in a Move(dst,src) operation
 
 
-Branch
+hmm, let's think about control flow.
+how do we move between ...
+hmm we haven't really defined an abstraction for dealing with expressions/statements
+
+Branch(Location loc)
+  
+  
+  
+  foo: goto foo;  /* C                */
+  0xeb 0xfe       /* x86 machine code */
+  
+
+Test(Storage dst, Comparison cmp, Value a, Value b)
+  FIXME: hmm, is this really fundamental?
+  
+
+  
   
 
 
-Call(Fn f, Value[] param, Storage s)
-  
-  s := f(param)
-  
-  
+
+Do we want to define functions, in the abstract, mathematical sense?
+If I do, I think the whole thing might fall into the lambda calculus area;
+which is nice and all, but not where I want to go.
 
 
 
@@ -189,11 +280,14 @@ Brainstorm way ahead:
 
 Reference:
 
-  1. http://en.wikipedia.org/wiki/Function_(mathematics)
-  2. http://en.wikipedia.org/wiki/Domain_(mathematics)
-  3. http://en.wikipedia.org/wiki/Codomain
-  4. http://en.wikipedia.org/wiki/Category_theory
-  5. http://en.wikipedia.org/wiki/Type_theory
-  6. http://en.wikipedia.org/wiki/Programming_language_theory
-  7. http://en.wikipedia.org/wiki/Type_system
+   1. http://en.wikipedia.org/wiki/Function_(mathematics)
+   2. http://en.wikipedia.org/wiki/Domain_(mathematics)
+   3. http://en.wikipedia.org/wiki/Codomain
+   4. http://en.wikipedia.org/wiki/Category_theory
+   5. http://en.wikipedia.org/wiki/Type_theory
+   6. http://en.wikipedia.org/wiki/Programming_language_theory
+   7. http://en.wikipedia.org/wiki/Type_system
+   8. http://en.wikipedia.org/wiki/Turing_machine
+   9. http://en.wikipedia.org/wiki/Graph_theory
+  10. http://en.wikipedia.org/wiki/Formal_semantics_of_programming_languages
 

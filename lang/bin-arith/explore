@@ -1,0 +1,40 @@
+
+
+Consider integer arithmetic as a familiar, simple programming language:
+
+  scoping: none
+    types: integer
+      storage: one single integer
+      values: literal integers
+      functions: + - * /
+
+How can we define a proper program?
+
+  Grammar
+
+    val  ::= '0' | '1' | value
+    op   ::= '+' | '-'
+    expr ::= val | op val | expr op expr
+
+And how can we apply our axioms to programs written in the integer arithmetical
+programming language?
+
+First, let's write some programs and parse them:
+
+    0  -> expr(val(0))
+    1  -> expr(val(1))
+    00 -> expr(val(00))
+    01 -> expr(val(01))
+    10 -> expr(val(10))
+    11 -> expr(val(11))
+    +0 -> expr(op(+),val(0))
+    -0 -> expr(op(-),val(0))
+
+...on second thought, we could do even better. the problem with generating
+combinations manually is that mistakes could be made, and the size of the output
+grows exponentially with regards to the complexity of the grammar.
+
+let us first produce a tool that, given a grammar definition, can generate
+output that matches that grammar.
+
+ 
