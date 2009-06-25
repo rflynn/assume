@@ -4,43 +4,34 @@
 \ \__/.\_\/\____/\/\____/\ \____/\ \_\ \_\ \_\ \____\
  \/__/\/_/\/___/  \/___/  \/___/  \/_/\/_/\/_/\/____/
                                                      
-"When you ASSUME you make an ASS out of U and ME"
 
-explore code as data.
-hopefully write static analysis tool.
-want to explore C source via HLL (Ocaml)
+"Testing shows the presence, not the absence, of bugs."
+  -- Edsger W. Dijkstra
+
+Apply axiomatic software model to source tree.
+Detect bogus/questionable constructs.
+If lint is a blacklist, this is a whitelist.
 
 git clone git://github.com/pizza/assume.git
 
 In the meantime, here is some reading material:
 
-* http://plus.kaist.ac.kr/~shoh/ocaml/ocamllex-ocamlyacc/ocamllex-tutorial/ocamllex-tutorial.html
-  Ocamllex tutorial
-
-* http://c2xml.sourceforge.net/
-  This is a straight-forward tool and a really good idea.
-  Sadly it's Windows-only.
-  XML is more readily manipulable than C source.
-
-* http://splint.org/
-  Modern UNIX "lint"; infamous for its copious output.
-  Written in C(!)
-
-* http://mtc.epfl.ch/software-tools/blast/
-  BLAST a static analyzer from Berkely. Haven't figured out
-  what it does yet.
-
-* http://www.kernel.org/pub/software/devel/sparse/
-  Tool written by Linus Torvalds to find common bugs in
-  Linux kernel drivers. Written in C, of course.
-
 * http://en.wikipedia.org/wiki/Static_code_analysis
+
   "It has been proven that, barring some hypothesis that the
   state space of programs is finite and small, finding all
   possible run-time errors, or more generally any kind of
   violation of a specification on the final result of a
   program, is undecidable: there is no mechanical method that
   can always answer truthfully whether a given program may or
-  may not exhibit runtime errors." -- that's what keeps us
-  programmers in business baby!
+  may not exhibit runtime errors."
+  
+  Absolutely true; it is impossible to know whether or not
+  a program will i.e. crash given a certain combination of
+  input.
+  
+  However, it is possible to know if it *can* crash by
+  enumerating all crashing conditions and assuring that they
+  are avoided.
+
 

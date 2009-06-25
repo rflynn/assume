@@ -152,6 +152,7 @@ size_t lex(const char *buf, size_t buflen, struct lexeme **head);
 size_t lex_file(FILE *f, struct lexeme **head);
 void   lexemelist_show(const struct lexeme *);
 void   lexeme_show(const struct lexeme *);
+int lexeme_cmp(const struct lexeme *, const struct lexeme *);
 
 #endif
 

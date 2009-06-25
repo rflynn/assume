@@ -1,0 +1,16 @@
+
+
+In order to validate a program P, we must first recursively validate d(P): all
+dependencies of P.
+
+For simplicity, at the moment, we assume the hardware on which the validation
+takes place is correct (not a good assumption to make, but we have to start
+somewhere).
+
+Itself!
+Programming Language (L)
+  Language compiler/interpreter (C)
+    Libraries on which compiler depends
+      Operating system (OS) on which C runs
+    shell in which C runs
+      

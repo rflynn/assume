@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <regex.h>
@@ -377,6 +378,14 @@ void lexeme_show(const struct lexeme *t)
   }
 }
 
+int lexeme_cmp(const struct lexeme *a, const struct lexeme *b)
+{
+  return
+    a->len == b->len &&
+    a->str[0] == b->str[0] &&
+    0 == memcmp(a->str, b->str, a->len);
+}
+
 void lexemelist_show(const struct lexeme *t)
 {
   while (t) {
@@ -512,7 +521,7 @@ size_t lex(const char *buf, size_t buflen, struct lexeme **head)
  */
 static char * file2buf(FILE *f, size_t *len)
 {
-  size_t buflen = 4096;
+  size_t buflen = 32 * 1024;
   char *buf = malloc(buflen);
   *len = 0;
   if (buf) {
