@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <regex.h>
@@ -375,6 +376,14 @@ void lexeme_show(const struct lexeme *t)
     printf("%s(%.*s)",
       Lexeme[t->tok].descr, (unsigned)t->len, t->str);
   }
+}
+
+int lexeme_cmp(const struct lexeme *a, const struct lexeme *b)
+{
+  return
+    a->len == b->len &&
+    a->str[0] == b->str[0] &&
+    0 == memcmp(a->str, b->str, a->len);
 }
 
 void lexemelist_show(const struct lexeme *t)

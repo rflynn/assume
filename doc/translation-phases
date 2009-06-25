@@ -36,7 +36,7 @@
     means that long macros (which are hideous but nonetheless
     exist) end up as some unreadable 1-line abomination
     
-      do { do { if (this) { that; } else { something_else; } } while(0) } while(0)
+      do { do { if (foo) { bar; } else { baz; } } while(0) } while(0)
     
     it's of course even worse when macros are multiple layers deep.
     
@@ -131,7 +131,8 @@
             potential problems with this:
 
               * considering just defined(FOO) with 2 outcomes,
-                even a few dozen 
+                even 16 tokens multiplies our work by 65k time.
+                do we want this?
             
               * platform-specific macros.
                 consider:
@@ -142,16 +143,18 @@
                 # include <sys/socket.h>
                 #endif
               
-              if i run this on Windows i will get a complaint about <sys/socket.h>
-              and vice-versa.
+              if i run this on Windows i will get a complaint about
+              <sys/socket.h> and vice-versa.
               
               i may be able to mitigate this with a hybridization of the
               interpreter and "all combinations" approaches, although this
-              might be over-complicated in implementation and complex to use.
+              might be over-complicated in implementation and complex to
+              use.
               
-              perhaps we honor #defines from <system.headers> and evaluate all
-              combinations of "application-specific.h" ones? that's an interesting
-              idea, but will probably have further complications...
+              perhaps we honor #defines from <system.headers> and evaluate
+              all combinations of "application-specific.h" ones? that's
+              an interesting idea, but will probably have further
+              complications...
               
 
       #undef
