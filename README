@@ -1,15 +1,15 @@
-   __      ____    ____  __  __    ___ ___      __   
- /'__`\   /',__\  /',__\/\ \/\ \ /' __` __`\  /'__`\ 
-/\ \_\.\_/\__, `\/\__, `\ \ \_\ \/\ \/\ \/\ \/\  __/ 
-\ \__/.\_\/\____/\/\____/\ \____/\ \_\ \_\ \_\ \____\
- \/__/\/_/\/___/  \/___/  \/___/  \/_/\/_/\/_/\/____/
-                                                     
+    __ _ ___ ___  _   _   _ __ ___   ___ 
+   / _` / __/ __|| | | | | '_ ` _ \ / _ \
+  | (_| \__ \__ \| |_| |_| | | | | |  __/
+   \__,_|___/___(_)__,_(_)_| |_| |_|\___|
 
 "Testing shows the presence, not the absence, of bugs."
   -- Edsger W. Dijkstra
 
-Apply axiomatic software model to source tree.
-Detect bogus/questionable constructs.
+Define axiomatic model for "sane" software.
+Match model against real-world software parse tree.
+Detect incorrect/unsane/undefined/overly-complex constructs.
+Produce human-readable instructions.
 If lint is a blacklist, this is a whitelist.
 
 git clone git://github.com/pizza/assume.git
@@ -33,5 +33,4 @@ In the meantime, here is some reading material:
   However, it is possible to know if it *can* crash by
   enumerating all crashing conditions and assuring that they
   are avoided.
-
 
