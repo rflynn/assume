@@ -2,20 +2,20 @@
 Programming Language Model
 ---------------------------
 
-Assumptions:
+State Assumptions:
   Real-world software contains lots of defects.
-  Well-defined is better than not-well-defined or undefined.
-  Simpler is better than complex.
-    Proving/deriving program correctness is easier given well-defined,
-    simple programs.
-    Most computer programs contain constructs that are not well-defined
-    or simple.
+  Most if not all defects are diagnosable given the proper information.
+  It is possible to define a general framework for describing a
+    programming language.
+  For any program P there are an infinite number of equivalent programs.
+    Of this set, there is a subset of one or more that is shortest.
+  Using this framework it would be possible to create models describing
+    optimal, correct constructs for programming languages in general,
+    and specific languages.
 
 Assert:
-  A model of correct software constructs can be applied to
-  existing programs to ensure the well-definedness of the
-  software, and then simplify it, resulting in programs with
-  fewer defects.
+  Given such a model M(L) for programming language L and a program P(L)
+    it should be possible to detect, diagnose and fix defects.
 
 Let a programming language L be the interface to a virtual machine
 for which the following concepts are well-defined:
