@@ -257,6 +257,21 @@ representing integer, floating point or architecture-specific address types.
 
 <div><img src="graph/software-object-bitvector.gif"></div>
 
+<p>
+A Software Object has the following properties:
+
+<ol>
+  <li>Lifetime
+    <ol>
+      <li>If an object is private then it is possible to know
+          all of its access patterns.
+      <li>If an object is public then knowledge of all possible
+          accesses depends on knowledge of all objects to which
+          it may be exposed. If they are all known, then
+          all of an object's accesses are known.
+    </ol>
+</ol>
+
 
 <h3>Type</h3>
 
@@ -385,8 +400,8 @@ as Storage.
   <ol type="a">
     <li>Lifetime/Extent
     <ol>
-      <li>it must be possible that storage is written to at least once.
-      <li>it must be possible that storage is read from at least once.
+      <li>It must be possible that storage is written to at least once in its lifetime.
+      <li>It must be possible that storage is read from at least once in its lifetime.
     </ol>
   </ol>
 
