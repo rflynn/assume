@@ -1,0 +1,13 @@
+
+digraph G {
+  subgraph clusterf {
+    label="f";
+  }
+  subgraph clusterg {
+    label="g";
+    "g.private"
+    "g.public"
+  }
+  clusterf -> "g.public"
+}
+

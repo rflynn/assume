@@ -1,0 +1,555 @@
+<html>
+<head>
+  <title>Programming Language Model</title>
+  <style type="text/css">
+    #container {
+      width:50em;
+    }
+    .unsure {
+      color:Red;
+    }
+    BLOCKQUOTE {
+      font-family:serif;
+    }
+    DT {
+      font-size:large;
+      text-decoration:underline;
+    }
+    DIV.psuedocode {
+      border:1px dashed #6c3;
+      padding:1em;
+      margin:1em;
+      font-family:Courier New, sans-serif;
+      white-space:pre;
+      color:Black;
+      background-color:#cfc;
+    }
+    span.comment {
+      color:#bbb;
+    }
+    div.note {
+      margin:1em;
+      padding:1em;
+      border:1px solid #ccc;
+      background-color:#eee;
+    }
+    .small {
+      font-size:small;
+    }
+  </style>
+</head
+<body>
+
+<div id="container">
+
+<h1>Programming Language Model</h1>
+<hr>
+
+<h2>State Assumptions</h2>
+<ul>
+  <li>A defect is an instruction/data interaction the full effects of which are
+      not well-defined by the language or perfectly controlled by the application.
+  <li>Software is written by humans.
+  <li>Humans are imperfect.
+  <li>Therefore, all software contains defects.
+  <li>The likelihood that
+  <li>Most if not all defects are diagnosable given the proper information.
+  <li>It is possible to define a general framework for describing a
+      programming language.
+  <li>Using this framework it would be possible to create models describing
+      optimal, correct constructs for programming languages in general, and
+      specific languages.
+</ul>
+
+<h2>Assert</h2>
+<p>
+Given such a model M(L) for programming language L and a program P(L)
+it should be possible to detect, diagnose and fix defects.
+
+<h2>Model Description</h2>
+
+<p>
+Let a programming language L be an
+<a href="http://en.wikipedia.org/wiki/Interface_(computer_science)">interface</a>
+to an
+<a href="http://en.wikipedia.org/wiki/Abstract_machine">abstract machine</a>
+for which the following properties are well-defined:
+
+  <ul>
+    <li>scoping
+    <li>type(s)
+    <li>storage
+    <li>values
+    <li>functions that modify scoping, types, storage, values and functions(*)
+  </ul>
+
+<p>
+Such that a program P would be a directed graph of instruction calls
+
+<p>
+Consider integer arithmetic as an example of a very simple, practical programming
+language:
+
+  <ul>
+    <li>scoping: (none)
+    <li>type: integer
+    <li>storage: one single integer
+    <li>values: literal integers
+    <li>functions: + - * /
+  </ul>
+
+<p>
+<h3>Prerequisites</h3>
+<dl>
+  <dt>Interface</dt>
+  <dd>Part of a component exposed to the outside world</dd>
+
+  <dt>Abstract Machine</dt>
+  <dd class="unsure">Need a decent definition in here</dd>
+</dl>
+
+<p>
+<h3>Scoping</h3>
+
+<h4>Definition</h4>
+
+<p>
+<ul>
+  <li>
+  Consider a program P as a directed graph G(P).
+  G(P) contains one node for each distinct component of P.
+
+  <li>
+  Let us define an edge e of G(P) as a defined relationship between two
+  components of program P.
+
+  <li>
+  Let us define the complexity C(P) as the size of the set of edges E(G(P))
+
+  <li>
+  Given such a model, LET US DEFINE A SCOPE as a subgraph S within G(P)
+  such that the nodes S(n) within it may be addressed as a single unit.
+</ul>
+
+<p>
+  <span>A Scope is a subgraph within the graph of a program.</span>
+  <div><img src="graph/scoping-nested.gif"></div>
+
+<p>
+In the absence of scoping any component of a program may interact any other part.
+That is, the size of set E(G(P)) is !C(P)
+
+<p>
+<b>The purpose of scoping is to reduce the complexity C(P) by limiting the
+number of allowable interactions between components.</b>
+
+<p>
+<blockquote>
+  "Controlling complexity is the essence of computer programming."
+                                          -- Brian Kernighan
+</blockquote>
+
+<p>
+Note that scoping itself does not imply any one particular algorithm for
+determining the accessibility between scoped components; only that such
+a system exists.
+
+<p>
+Scoping algorithms include, but are not limited to, the following:
+
+<dl>
+
+  <dt>Global scoping</dt>
+  <dd>
+    <p>
+    Resolution via single, global namespace.
+    <p>
+    <img src="graph/scoping-global.gif">
+    <p>
+    <code>x</code> always resolves to the top-level symbol from any scope.
+    <p>
+    Psuedocode:
+<div class="psuedocode">resolve(symbol):
+  if Global[symbol]:
+    return Global[symbol]
+  <span class="comment"># failure</span>
+  error(symbol + " not found")
+</div>
+    <p>Complexity:
+    &Theta;(1). For any given symbol there is exactly one answer.
+  </dd>
+
+  <dt>Static/lexical scoping</dt>
+  <dd>
+    <p>
+    Resolution via declaration hierarchy.
+    <p>
+    <img src="graph/scoping-lexical.gif">
+    <p>
+    <code>f</code> and <code>g</code> are independent scopes; children of the parent scope in which <code>x</code> is declared.<br>
+    <code>g.x</code> is inaccessible to scope <code>f</code><br>
+    <code>g(f(x)) == f(x) == x</code>
+    <p>
+    Psuedocode:
+<div class="psuedocode">resolve(symbol, declContext):
+  <span class="comment"># check decl</span>
+  if declContext.declare[symbol]:
+    return declContext.declare[symbol]
+  <span class="comment"># anywhere else to look?</span>
+  if not declContext.parent:
+    error(symbol + " not found")
+  <span class="comment"># recursive parent search</span>
+  return resolve(symbol, declContext.parent)
+</div>
+    <p>Complexity:
+    &Theta;(n), where n is the number of total scopes.<br>
+    Because the result of <code>resolve(symbol, declContext)</code> is invariant
+    a program graph may be rewritten by replacing <code>symbol</code> with the results
+    of <code>resolve(symbol, declContext)</code>
+  </dd>
+
+  <dt>Dynamic scoping</dt>
+  <dd>
+    <p>
+    Resolution via execution context.
+    <p>
+    <div><img src="graph/scoping-dynamic.gif"></div>
+    <p>
+    <code>f</code> and <code>g</code> are independent scopes; children of the parent scope in which <code>x</code> is declared.<br>
+    <code>f(x)</code> == <code>x</code><br>
+    <code>g(f(x))</code> == <code>g.x</code>
+    <p>
+    Psuedocode:
+<div class="psuedocode">resolve(symbol, execContext):
+  <span class="comment"># current context</span>
+  if execContext.syms[symbol]: 
+    return execContext.syms[symbol]
+  <span class="comment"># anywhere else to look?</span>
+  if not execContext.parent:
+    error(symbol + " not found") 
+  <span class="comment"># recursive parent search</span>
+  return resolve(symbol, execContent.parent) 
+</div>
+    <p>Complexity:
+    &Theta;(n<sup>c</sup>), where n is the number of total scopes and c is the number of
+    references to a given scope.
+  </dd>
+
+</dl>
+
+<p>
+Let a scoped subgraph S(G(P)) be called a Software Object.
+
+
+<h3>Software Object</h3>
+
+<p>
+Informally a Software Object can be defined as an abstract collection
+of one or more unique Software Object components for which the
+accessibility by other Software Objects is defined by a scoping
+algorithm.
+
+<div><img src="graph/software-object-abstract.gif"></div>
+
+<p>
+In many programming languages the fundamental Software Objects are fixed-size bit vectors
+representing integer, floating point or architecture-specific address types.
+
+<div><img src="graph/software-object-bitvector.gif"></div>
+
+
+<h3>Type</h3>
+
+<p>
+  &lt;Scope&gt; &lt;Type&gt;
+
+<p>
+  Language must contain one or more well-defined types.
+
+<p>
+  A well-defined type includes definition of storage and
+  results of all operations.
+
+<div class="psuedocode">bit equal(Type a, Type b)</div>
+
+
+<h3>Value</h3>
+
+<p>
+  &lt;Scope&gt; &lt;Type&gt; &lt;Value&gt;
+
+<p>
+  With the following requirements:
+
+  <ol type="a">
+    <li>Scope
+    <ol>
+      <li>defined
+      <li>valid
+    </ol>
+    <li>Type
+    <ol>
+      <li>defined
+      <li>compatible with Value
+    </ol>
+    <li>Value
+    <ol>
+      <li>defined
+      <li>compatible with Type
+    </ol>
+  </ol>
+
+<p>
+  the declaration of a constant/literal value constitutes
+  a value "source" vs, which is the first item in a chain of
+  one or more value states throughout the lifetime of that
+  value.
+
+<p class="unsure">
+Value ::= &lt;Storage&gt; | &lt;Literal Or Constant&gt;
+
+  Let Value now refer to any object that yields a value;
+  Storage or a Literal or Constant value
+</p>
+
+<h3>Storage</h3>
+
+<p>
+  &lt;Scope&gt; &lt;Type&gt; &lt;Identifier&gt;
+
+<p>
+  Let Storage S(Scope, Type, Identifier) be a software
+  object that defines the following interface:
+
+<div class="psuedocode">Value  read(Scope, Type)
+()    write(Scope, Type, Value)
+</div>
+
+<p>
+Such that read() and write() complement each other.
+Given:
+
+<div class="psuedocode">V<sub>1</sub> := read(Sc, T)
+write(Sc, T, V<sub>1</sub>)
+V<sub>2</sub> := read(Sc, T)
+</div>
+
+<p>
+The following always holds:
+
+<div class="psuedocode">V<sub>1</sub> == V<sub>2</sub></div>
+
+<p>
+Informally, that the contents of Storage must be equivalent before and after
+a read and then write of itself.
+
+<div class="note">
+NOTE: This precludes familiar asynchronous read/write locations from qualifying
+as Storage.
+<ul>
+  <li>Interrupts
+  <li>Memory-mapped I/O
+  <li class="unsure">libc's <code>errno</code> (actually... i'm not sure if this qualifies or not...)
+  <li>POSIX/UNIX's <code>signals</code>
+</ul>
+</div>
+
+<p>
+  Storage declaration must...
+
+  <ol type="a">
+    <li>Scope
+    <ol>
+      <li>defined
+      <li>valid
+    </ol>
+    <li>Type
+    <ol>
+      <li>defined
+      <li>compatible with Value (may be Any)
+    </ol>
+    <li>Identifier
+    <ol>
+      <li>be unique as defined by the scoping rules of the language
+    </ol>
+    <li>Value
+    <ol>
+      <li>defined
+      <li>compatible with Type
+    </ol>
+  </ol>
+
+<p>
+  Storage thus declared must, at a minimum...
+
+  <ol type="a">
+    <li>Lifetime/Extent
+    <ol>
+      <li>it must be possible that storage is written to at least once.
+      <li>it must be possible that storage is read from at least once.
+    </ol>
+  </ol>
+
+
+<h3>Function(Storage out, Value in)</h3>
+
+<p>
+Abstract:
+
+<div class="psuedocode">out &lt;- fn(in)</div>
+
+<p>
+  An abstraction whereby input Value(s) are transformed and
+  written to Storage out.
+
+<p>
+  "Statements" and "Procedures" that operate by "side effects"
+  are in fact functions that where the input and output implicitly
+  include an entire Scope.
+
+<p>
+  Consider:
+
+<div class="psuedocode">i := 1
+incr():
+  i := i + 1
+  print i
+incr()
+</div>
+
+<p>
+  all such programs can be re-written as equivalent function in the following manner:
+
+<div class="psuedocode">parent_scope := ( .out := stdout, .i := 1 )
+incr(par_ptr):
+  par_ptr-&gt;i := par_ptr-&gt;i + 1
+  par_ptr-&gt;out = fprint par_ptr-&gt;out i
+incr(&amp;parent_scope)
+</div>
+
+<p>
+or like so:
+
+<div class="psuedocode">parent_scope := ( .out := stdout, .i := 1 )
+incr(p):
+  p.i := p.i + 1
+  fprint p.out i
+  return p
+parent_scope = incr(parent_scope)
+</div>
+
+<p>
+  the point is to illustrate explicitly what happens implicitly in the context
+  of a "procedure" -- that 
+
+
+<h3>Move(Storage dst, Value src)</h3>
+
+<p>
+  Overwrite contents of storage dst with value src
+  The most fundamental function.
+
+<p>
+Abstract
+
+<div class="psuedocode">dst &lt;- src</div>
+
+<ol>
+  <li>type compatibility
+  <li>if src is storage, it must have been previously written to.
+  <li>
+    <p>
+    dst should not already contain src value
+    if it is not possible for dst to contain anything other than
+    the value being written to it. consider:
+
+<div class="psuedocode">a := b
+a := b
+</div>
+
+    <p>
+    note that it is the combination of storage location AND value, not
+    just storage that is important. consider:
+
+<div class="psuedocode">a := b
+b := a
+</div>
+
+    <p>
+    note that there are many cases where this can appear to happen, but does
+    not, because what is being read/written is not Storage because it does not
+    meet the requirements for storage
+      <ol>
+        <li>C's <code>volatile</code>. 'src' may be memory-mapped i/o or something similar
+        <li>threaded code. research possibilities.
+      </ol>
+    <p>
+    <u>Exceptions</u>
+      <dl>
+        <dt>debouncing</dt>
+        <dd>
+            purpose of copy is to introduce a small delay
+            to allow circuit to settle (microcontroller-style)
+        </dd>
+      </dl>
+ </ol>
+
+<pre>
+
+hmm, let's think about control flow.
+how do we move between ...
+hmm we haven't really defined an abstraction for dealing with expressions/statements
+
+Branch(Location loc)
+
+  foo: goto foo;  /* C                */
+  0xeb 0xfe       /* x86 machine code */
+
+Test(Storage dst, Comparison cmp, Value a, Value b)
+  FIXME: hmm, is this really fundamental?
+
+Do we want to define functions, in the abstract, mathematical sense?
+If I do, I think the whole thing might fall into the lambda calculus area...
+which is nice and all, but not where I want to go.
+
+Brainstorm way ahead:
+  function must have exactly one entry point
+  function must have exactly one exit point
+
+</pre>
+
+Reference:
+
+<ol>
+  <li>Thompson, Ken, <a href="http://www.ece.cmu.edu/~ganger/712.fall02/papers/p761-thompson.pdf">Reflections on Trusting Trust</a> [1984]
+  <li>Collins, Michael, <a href="http://www.ece.cmu.edu/~koopman/des_s99/formal_methods/">Formal Methods</a> [1998]
+  <li>Fleck, Arthur C., <a href="http://www.cs.uiowa.edu/~fleck/181.html">Formal Methods in Software Engineering</a>
+  <li>Slonneger, Ken, <a href="http://www.cs.uiowa.edu/~slonnegr/plf/Book/">Syntax and Semantics of Programming Language</a>
+  <li><a href="http://rewriting.loria.fr/">Rewriting Homepage</a>
+  <li><a href="http://en.wikipedia.org/wiki/Graph_rewriting">Graph rewriting</a>
+
+  <li><a href="http://en.wikipedia.org/wiki/Scoping">Scoping</a>
+  <li><a href="http://en.wikipedia.org/wiki/Big_O_notation">Big O notation</a>
+  <li><a href="http://en.wikipedia.org/wiki/Graph_(data_structure)">Graph (data structure)</a>
+  <li><a href="http://en.wikipedia.org/wiki/Graph_theory">Graph theory</a>
+  <li><a href="http://en.wikipedia.org/wiki/Glossary_of_graph_theory">Glossary of graph theory</a>
+
+  <li><a href="http://en.wikipedia.org/wiki/Formal_semantics_of_programming_languages">Formal semantic of programming languages</a>
+  <li><a href="http://en.wikipedia.org/wiki/Structured_programming">Structured programming</a>
+
+  <!-- maybe... -->
+  <li><a href="http://en.wikipedia.org/wiki/Function_(mathematics)">Function_(mathematics)</a>
+  <li><a href="http://en.wikipedia.org/wiki/Domain_(mathematics)">Domain_(mathematics)</a>
+  <li><a href="http://en.wikipedia.org/wiki/Codomain">Codomain</a>
+  <li><a href="http://en.wikipedia.org/wiki/Category_theory">Category_theory</a>
+  <li><a href="http://en.wikipedia.org/wiki/Type_theory">Type_theory</a>
+  <li><a href="http://en.wikipedia.org/wiki/Programming_language_theory">Programming_language_theory</a>
+  <li><a href="http://en.wikipedia.org/wiki/Type_system">Type_system</a>
+  <li><a href="http://en.wikipedia.org/wiki/Turing_machine">Turing_machine</a>
+
+</ol>
+
+</div>
+</body>
+</html>
+

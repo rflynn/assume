@@ -1,0 +1,18 @@
+// http://www.graphviz.org/Gallery/undirected/fdpclust.html
+
+digraph G {
+  x
+  subgraph cluster0 {
+    label="f";
+    "f(x)"
+  }
+  subgraph cluster1 {
+    label="g";
+    "g.x"
+    "g(f(x))"
+  }
+  "g.x" -> "g.x"
+  "f(x)" -> x
+  "g(f(x))" -> x 
+}
+

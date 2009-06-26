@@ -1,0 +1,17 @@
+
+digraph G {
+  x
+  subgraph cluster0 {
+    label="f";
+    "f(x)"
+  }
+  subgraph cluster1 {
+    label="g";
+    "g.x"
+    "g(f(x))"
+  }
+  "g.x" -> "g.x"
+  "g(f(x))" -> "f(x)" -> "g.x"
+  "f(x)" -> x
+}
+

@@ -1,0 +1,13 @@
+// http://www.graphviz.org/Gallery/undirected/fdpclust.html
+
+digraph G {
+  subgraph cluster0 {
+    label="Scope 0";
+    a
+    subgraph cluster1 {
+      label="Scope 1";
+      b
+    }
+  }
+}
+
