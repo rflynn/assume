@@ -1,6 +1,5 @@
 
-
-In order to validate a program P, we must first recursively validate d(P): all
+In order to validate a program P, we must first recursively validate all
 dependencies of P.
 
 For simplicity, at the moment, we assume the hardware on which the validation

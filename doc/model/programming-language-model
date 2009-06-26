@@ -1,4 +1,7 @@
 
+Programming Language Model
+---------------------------
+
 Assumptions:
   Real-world software contains lots of defects.
   Well-defined is better than not-well-defined or undefined.
@@ -9,31 +12,29 @@ Assumptions:
     or simple.
 
 Assert:
-  An axiomatic model of correct software constructs can be applied to
-  existing programs to ensure the well-definedness of the software, and
-  then simplify it, resulting in programs with fewer defects.
-        
+  A model of correct software constructs can be applied to
+  existing programs to ensure the well-definedness of the
+  software, and then simplify it, resulting in programs with
+  fewer defects.
 
-Axiomatic Software Model
--------------------------
-
-Let a programming language P be the interface to a virtual machine
+Let a programming language L be the interface to a virtual machine
 for which the following concepts are well-defined:
 
   scoping
     type(s)
       storage
       values
-      functions
+      functions that modify scoping, types, storage, values and functions(*)
 
-The internals of the virtual machine providing these features is
-irrelevant in theory, but in practice should be considered concerning
-language design.
+Such that a program P would be a directed graph of function calls
 
-Consider integer arithmetic as a familiar, simple programming language:
+QUESTION: do i want to use "function" here? perhaps a less-loaded term
+such as instruction or operation. i think instruction may work better.
 
-  scoping: none
-    types: integer
+Consider integer arithmetic as a simple programming language:
+
+  scoping: (none)
+    type: integer
       storage: one single integer
       values: literal integers
       functions: + - * /
@@ -41,30 +42,33 @@ Consider integer arithmetic as a familiar, simple programming language:
 
 Scoping
   
-  Let us define complexity as the number of possible interactions
-  between components. Complexity rises exponentially with the number
-  of exposed components.
+  Let us consider a program P as an undirected graph G(P). G(P) contains
+  one node for each distinct component of P.
+  
+  Let us define an edge e of G(P) as a defined relationship between two
+  components of program P.
+  
+  Let us define the complexity C(P) as the size of the set of edges E(G(P))
+  
+  Given such a model, LET US DEFINE A SCOPE as a subgraph S within G(P)
+  such that the nodes S(n) within it may be addressed as a single unit.
+  
+  The purpose of scoping is to reduce the complexity C(P) by limiting the
+  number of defined interactions between components.
   
   "Controlling complexity is the essence of computer programming."
                                           -- Brian Kernighan
   
-  The purpose of scoping is to control complexity by reducing the
-  exposure between components of a program. In math terms, it
-  defines the "domain" of a program's components.
+  In the absence of scoping any component of a program may interact any
+  other part. That is, the size of set E(G(P)) is !C(P)
   
-  In the absence of scoping any part of a program may modify any
-  other part.
-  
-  Every scope instance partitions a program into two sets: those that
-  can access objects at that scope and those that cannot.
-
-  Let such partitions be called Software Objects.
+  Let a scoped subgraph S(G(P)) be called a Software Object.
   
   Object
   
     FIXME: Hmmm, definition needs to be recursive. Work on the
       formal definition.
-
+    
     Given Program P be the set of components
       Let Object O be the non-empty subset of {C} that share scope
     
@@ -76,9 +80,6 @@ Scoping
     | private | members inaccessible to other objects
     | public <-> accessible by other objects
     +---------+
-    
-    The simplest software objects in computing are really bits, but
-    let's simplify.
     
     In C they are the built-in scalar types, i.e.
     
@@ -132,13 +133,13 @@ Value ::= <Storage> | <Literal Or Constant>
 
 Storage
 
+  <Scope> <Type> <Identifier>
+
   Let Storage S(Scope, Type, Identifier) be an interface
   implementing the following functions
 
     Value read(Scope, Type)
     ()    write(Scope, Type, Value)
-  
-  <Scope> <Type> <Identifier>
   
   i.e.
     int i;
@@ -154,10 +155,49 @@ Storage
       0. reference an existing type
     
     identifier
-      0. identifier is (namespace) unique
+      0. identifier scope unique
     
-    overall
+    Value read(Scope, Type)
+
       0. 
+
+Move(Storage dst, Value src)
+  
+  Overwrite contents of storage dst with value src
+  
+  dst <- src
+  
+  0. type compatibility
+  1. if src is storage, it must have been previously written to.
+  2. dst should not already contain src value
+    if it is not possible for dst to contain anything other than
+    the value being written to it.
+    consider:
+    
+      a := b
+      a := b
+    
+    note that it is the combination of storage location AND value, not
+    just storage that is important. consider:
+    
+      a := b
+      b := a
+    
+    note that there are many cases where this can happen, such as
+      * C's "volatile". 'src' may be memory-mapped i/o or something similar
+      * threaded code. research possibilities.
+    exceptions
+      * debouncing: purpose of copy is to introduce a small delay
+        to allow circuit to settle (microcontroller-style)
+  3. 
+  
+  Read(foo)
+  
+    where foo is src operand in a Move(dst,src) operation
+  
+  Write(foo)
+  
+    where foo is dst operand in a Move(dst,src) operation
 
 
 Function(Storage out, Value in)
@@ -206,44 +246,6 @@ Function(Storage out, Value in)
   }
 
 
-
-Move(Storage dst, Value src)
-  
-  Overwrite contents of storage dst with value src
-  
-  dst <- src
-  
-  0. type compatibility
-  1. if src is storage, it must have been previously written to.
-  2. dst should not already contain src value
-    if it is not possible for dst to contain anything other than
-    the value being written to it.
-    consider:
-    
-      a := b
-      a := b
-    
-    note that it is the combination of storage location AND value, not
-    just storage that is important. consider:
-    
-      a := b
-      b := a
-    
-    note that there are many cases where this can happen, such as
-      * C's "volatile". 'src' may be memory-mapped i/o or something similar
-      * threaded code. research possibilities.
-    exceptions
-      * debouncing: purpose of copy is to introduce a small delay
-        to allow circuit to settle (microcontroller-style)
-  3. 
-  
-  Read(foo)
-  
-    where foo is src operand in a Move(dst,src) operation
-  
-  Write(foo)
-  
-    where foo is dst operand in a Move(dst,src) operation
 
 
 hmm, let's think about control flow.

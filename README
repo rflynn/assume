@@ -12,7 +12,7 @@ assume is to lint as a whitelist is to a blacklist.
 
 Goals
 
-  * Define axiomatic software model.
+  * Define abstract programming language model.
   * Validate parse tree against model.
   * Detect incorrect/unsane/undefined/complex constructs.
   * Produce human-readable instructions for correcting them.
