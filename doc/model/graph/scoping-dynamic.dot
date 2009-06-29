@@ -1,5 +1,8 @@
 
 digraph G {
+  label="Dynamic Scoping"
+  graph [fontname="Monospace",fontsize="10"]
+  node [fontname="Monospace",fontsize="10"]
   x
   subgraph cluster0 {
     label="f";

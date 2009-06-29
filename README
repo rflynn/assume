@@ -6,20 +6,19 @@
 "Testing shows the presence, not the absence, of bugs."
                                 -- Edsger W. Dijkstra
 
-git clone git://github.com/pizza/assume.git
-
 assume is to lint as a whitelist is to a blacklist.
 
 Goals
 
-  * Define abstract programming language model.
-  * Validate parse tree against model.
-  * Detect incorrect/unsane/undefined/complex constructs.
-  * Produce human-readable instructions for correcting them.
+  * Define formal method-style framework for high-level programming languages (HLL).
+  * Define popular HLL in terms of this framework.
+  * Build HLL lexers/parsers.
+  * Parse programs written in HLLs and validate against language definition.
+  * Detect ambiguous, non-canonical, defect-containing constructs.
+  * Optionally transform source code.
   
 References
 
-  * http://en.wikipedia.org/wiki/Lint_(software)
-  * http://en.wikipedia.org/wiki/Blacklist_(computing)
-  * http://en.wikipedia.org/wiki/Whitelist
+  * http://en.wikipedia.org/wiki/Formal_methods
+  * http://en.wikipedia.org/wiki/High_level_language
 

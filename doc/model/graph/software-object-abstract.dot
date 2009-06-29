@@ -1,13 +1,15 @@
 
 digraph G {
+  graph [fontname="Monospace",fontsize="10"]
+  node [fontname="Monospace",fontsize="10"]
   subgraph clusterf {
     label="f";
   }
   subgraph clusterg {
     label="g";
-    "g.private"
-    "g.public"
+    "g.concealed"
+    "g.exposed"
   }
-  clusterf -> "g.public"
+  clusterf -> "g.exposed"
 }
 

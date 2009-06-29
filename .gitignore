@@ -1,3 +1,4 @@
 .*.swp
 *.cmi
 *.cmo
+*.beam

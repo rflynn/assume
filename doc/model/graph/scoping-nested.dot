@@ -1,6 +1,9 @@
 // http://www.graphviz.org/Gallery/undirected/fdpclust.html
 
 digraph G {
+  label="Scoping Abstract"
+  graph [fontname="Monospace",fontsize="10"]
+  node [fontname="Monospace",fontsize="10"]
   subgraph cluster0 {
     label="Scope 0";
     a

@@ -67,8 +67,9 @@
   <li>Complexity, portability problems and a low code density between CPU instructions and abstract, algorithmic
       thought make software development at this level error-prone, slow and tedious.
   <li>High-level programming languages, implement a virtual machine
-      on top of the CPU. While differing in implementation, all share some common infrastructural
-      features in order to reduce the complexity and error-prone nature of engineering software.
+      on top of the CPU. While there is great variety in design and implementation of high level languages,
+      all share a common set of infrastructural features in order to reduce the complexity and errors inherent
+      in developing software.
   <li>It is my goal to develop a methodology and accompanying software in order to better understand the
       precise nature of high level languages and software that is written in them.
       I hope to be able to analyze, detect defects in and perform other useful transformations on the
@@ -122,7 +123,7 @@ language:
 </dl>
 
 <p>
-<h3>Scoping</h3>
+<h2>Scoping</h2>
 
 <p>
 Any programming language providing accessible storage 
@@ -238,7 +239,7 @@ Scoping algorithms include, but are not limited to, the following:
   return resolve(symbol, declCtx.parent)
 </div>
     <p>Complexity:
-    &Theta;(n), where n is the number of scope nesting levels.<br>
+    &Theta;(n), where n is the number of declared nested scoping levels.<br>
     However, because the result of <code>resolve(symbol, declCtx)</code> is invariant
     a program graph may be rewritten by replacing <code>symbol</code> with the results
     of <code>resolve(symbol, declCtx)</code>
@@ -305,17 +306,13 @@ A Software Object has the following properties:
 <ol>
   <li>Lifetime
     <ol>
-      <li>If an object is private then it is possible to know
-          all of its access patterns.
-      <li>If an object is public then knowledge of all possible
-          accesses depends on knowledge of all objects to which
-          it may be exposed. If they are all known, then
-          all of an object's accesses are known.
+      <li>The full lifetime of an object can be known only if all
+          possible accesses by other objects are also known.
     </ol>
 </ol>
 
 
-<h3>Type</h3>
+<h2>Type</h2>
 
 <div class=quote>
 &quot;a tractable syntactic method for proving the absence of
@@ -337,9 +334,8 @@ Pierce, Benjamin (2002). Types and Programming Languages. MIT Press. ISBN 0-262-
   Type systems can eliminate these errors.
 
 <p>
-  Language must contain one or more well-defined types.
-  A well-defined Type includes definition of storage and
-  results of all operations defined that that Type.
+  A type system defines valid/invalid ranges of Values, and the results of all
+  fundamental operations for a given Type.
 
 <dl>
   <dt>Compatibility with other Types</dt>
@@ -351,28 +347,26 @@ bit Type.compatible(Type a, Type b) <span class="comment"># are conversions betw
 
   <dt>Range</dt>
   <dd>
-<div class="psuedocode">Value Type.minimum () <span class="comment"># minimum representable</span>
-Value Type.maximum () <span class="comment"># maximum representable</span>
+<div class="psuedocode">Value Type.minimum (Type) <span class="comment"># minimum representable</span>
+Value Type.maximum (Type) <span class="comment"># maximum representable</span>
 </div>
 <p>
 a Type may optionally include one or more placeholder Value denoting a Value is out of calculable range.
-<div class="psuedocode">Value Type.-&#8734;() <span class="comment"># too small</span>
-Value Type.&#8734; () <span class="comment"># too large</span>
-Value Type.&#917; () <span class="comment"># step</span>
+<div class="psuedocode">Value Type.-&#8734;(Type) <span class="comment"># too small</span>
+Value Type.&#8734; (Type) <span class="comment"># too large</span>
+Value Type.&#917; (Type) <span class="comment"># step</span>
 </div>
   </dd>
 
-  <dt>Ordinality</dt>
+  <dt>Core Operations</dt>
   <dd>
-<div class="psuedocode">bit Type.equal  (Value a, Value b) <span class="comment"># </span>
-ord Type.compare(Value a, Value b) <span class="comment"># </span>
-</div>
+
   </dd>
 
 </dl>
 
 
-<h3>Value</h3>
+<h2>Value</h2>
 
 <p>
 For out purposes a Value can be considered a finite bitwise serialization of some external entity.
@@ -409,13 +403,19 @@ Functions are methods of creating Values from Values.<br>
   one or more value states throughout the lifetime of that
   value.
 
+<h3>Type Conversion</h3>
+
 <p>
-  All languages that allow conversion between Values of two or more Types must define an interface equivalent to:
+Most high-level languages allow conversion between Values of a different Type.
 
-<div class="psuedocode">Value convert(Type from, Type to, Value)</div>
+<h4>Explicit</h4>
+<div class="psuedocode">bit Type.cast  (Storage dst, Value src)</div>
+
+<h4>Implicit</h4>
+<div class="psuedocode">bit Type.coerce(Storage dat, Value src)</div>
 
 
-<h3>Storage</h3>
+<h2>Storage</h2>
 
 <p>
 Storage is an entity capable of storing and retrieving Values.
@@ -470,12 +470,13 @@ as Storage.
 </div>
 
 
-<h3>Function(Storage out, Value in)</h3>
+<h2>Function(Storage dst, Value src)</h2>
 
 <p>
 Abstract:
 
-<div class="psuedocode">out &larr; fn(in)</div>
+<p>
+<code>dst &larr; fn(src)</code>
 
 <p>
   An abstraction whereby input Value(s) are transformed and
@@ -522,7 +523,7 @@ parent_scope = incr(parent_scope)
   of a "procedure" -- that 
 
 
-<h3>Move(Storage dst, Value src)</h3>
+<h2>Move(Storage dst, Value src)</h2>
 
 <p>
   Overwrite contents of storage dst with value src
@@ -531,7 +532,9 @@ parent_scope = incr(parent_scope)
 <p>
 Abstract
 
-<div class="psuedocode">dst &larr; src</div>
+
+<p>
+<code>dst &larr; src</code>
 
 <ol>
   <li><code>Type.compatible(dst.Type, src.Type) == 1</code> <span class="comment"># types are at least compatible</span>
@@ -571,10 +574,6 @@ b := a
       </dl>
  </ol>
 
-<div>
-<img src="graph/io-abstract.gif">
-</div>
-
 <p>
   Storage thus declared must, at a minimum...
 
@@ -585,6 +584,94 @@ b := a
       <li>It must be possible that storage is read from at least once in its lifetime.
     </ol>
   </ol>
+
+
+<div style="border:1px solid green">
+we should be able to model i/o as a publicly-scoped entity whose function is
+basically unknown because its other interactions are not all known to us...
+<img src="graph/io-abstract.gif">
+</div>
+
+<h2>Source Code Cleanup</h2>
+
+<h3>Disambiguation</h3>
+
+<p>
+Languages may include constructs that are ambiguous; that is, that they may able
+to be interpreted in different ways.
+
+<pre>
+0             /* vs */ 0U
+0             /* vs */ 0L
+0             /* vs */ 0.F
+sizeof 0L * 0 /* vs */ 0 * sizeof 0L
+</pre>
+
+
+<h3>Canonicalization</h3>
+
+<p>
+our goal for source code should be to generate the simplest possible version that
+is exactly equivalent. we want it to be as easy to read and as free from clutter
+as possible.
+
+<div class="note">
+NOTE: "simplest" must be defined very clearly, as there are many ways in which this
+could backfire and result in programs that are good entries for the <a href="http://www.ioccc.org">IOCCC</a>.
+</div>
+
+<pre>
+unsigned int i;
+/* vs. */
+unsigned i;
+</pre>
+
+
+<h3>Defect Detection</h3>
+
+<h4>Categories of Defects</h4>
+<p>
+How should we categorize our errors? We want to classify things so they are
+easy to filter/search/manage.
+<dl>
+  <dt>Lex error (lex)</dt>
+  <dd>A character that is not legal has been enountered</dd>
+
+  <dt>Parse error / Grammar error (grammar)</dt>
+  <dd>The tokens are valid but do not match the grammar</dd>
+
+  <dt>Type error (type)</dt>
+  <dd>
+    <ol>
+      <li>undef
+      <li>incompatible
+    </ol>
+  </dd>
+
+  <dt>Value error (value)</dt>
+  <dd>
+    <ol>
+      <li>truncate
+    </ol>
+  </dd>
+
+  <dt>Undefined behavior (undefined)</dt>
+  <dd></dd>
+
+  <dt>Portability / implementation-defined (portable)</dt>
+  <dd></dd>
+
+  <dt>Algorithmic error (algo)</dt>
+  <dd></dd>
+</dl>
+
+<ul>
+  <li>Type conversion
+  <ul>
+    <li>Implicit
+    <li>Explicit
+  </ul>
+</ul>
 
 <pre>
 
@@ -605,8 +692,11 @@ If I do, I think the whole thing might fall into the lambda calculus area...
 which is nice and all, but not where I want to go.
 
 Brainstorm way ahead:
-  function must have exactly one entry point
-  function must have exactly one exit point
+  Structured Programming:
+    function must have exactly one entry point
+    function must have exactly one exit point
+      not necessarily... but it would be nice to be able to transform code
+      to match this form
 
 </pre>
 
@@ -627,6 +717,8 @@ Reference:
   <li><a href="http://en.wikipedia.org/wiki/Primitive_data_type">Primitive data type</a>
   <li><a href="http://en.wikipedia.org/wiki/Kind_(type_theory)">Kind (type theory)</a>
   <li><a href="http://en.wikipedia.org/wiki/Type_conversion">Type conversion</a>
+  <li><a href="http://en.wikipedia.org/wiki/Type_punning">Type punning</a>
+  <li><a href="http://en.wikipedia.org/wiki/Uniqueness_type">Uniqueness type</a>
 
   <li>Thompson, Ken, <a href="http://www.ece.cmu.edu/~ganger/712.fall02/papers/p761-thompson.pdf">Reflections on Trusting Trust</a> [1984]
   <li>Collins, Michael, <a href="http://www.ece.cmu.edu/~koopman/des_s99/formal_methods/">Formal Methods</a> [1998]

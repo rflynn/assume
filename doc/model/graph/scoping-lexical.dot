@@ -1,6 +1,9 @@
 // http://www.graphviz.org/Gallery/undirected/fdpclust.html
 
 digraph G {
+  label="Lexical Scoping"
+  graph [fontname="Monospace",fontsize="10"]
+  node [fontname="Monospace",fontsize="10"]
   x
   subgraph cluster0 {
     label="f";
