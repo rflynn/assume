@@ -1,0 +1,35 @@
+
+digraph G {
+  label="Incidence, Degree and Adjacency"
+
+  nodesep="1.5"
+  graph[fontname="Monospace",fontsize="8",nodesep="0.25"]
+  node [fontname="Monospace",fontsize="8",margin="0.1"]
+  edge [fontname="Monospace",fontsize="8"]
+
+  subgraph clusterAdj1 {
+    label="Node and edge incidence"
+    "n0\nincident(e0)" -> "n1\nincident(e0)" [label="e0\nincident(n0,n1)"]
+  }
+
+  subgraph clusterAdj2 {
+    label="Degree (valency)\nTotal Degree <- |E(G)|*2"
+    "degree0\n(isolated vertex)"
+    "degree1\n(leaf)" -> degree3
+    degree2 -> degree2
+    degree3 -> degree3
+  }
+
+  subgraph clusterAdj3 {
+    label="Vertices are adjacent if connected by an edge.\nu -> v\nv -> w\n!(u -> w)\nSet of adjacent vertices are a neighbrohood N(v).\nNeighborhood is open if self not included.\nClosed if self included.\nN(u)={v}\nN(v)={u,w}\nN(w)={v}"
+    u -> v
+    v -> w
+  }
+
+  subgraph clusterDominatrix {
+    label="A dominating set"
+    bar -> dominator -> foo
+  }
+
+}
+

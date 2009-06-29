@@ -1,12 +1,16 @@
 
 digraph G {
   subgraph clusterbv {
-    label="bitvector";
+    fontsize="12";
+    label="bitvector(n)";
     subgraph clusterbvpublic {
+      fontsize="10";
       label="public";
-      bit0
-      bit1
-      "bit(n)"
+        "node9" [
+        label = "bit0 | bit1 | ... | bit(n)"
+        shape = "record"
+        fontsize="8"
+        ];
     }
   }
 }

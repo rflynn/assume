@@ -1,0 +1,45 @@
+
+digraph G {
+  label="Directed Graphs"
+  nodesep="1.5"
+  graph[fontname="Monospace",fontsize="8",nodesep="0.25"]
+  node [fontname="Monospace",fontsize="8",margin="0.1"]
+  edge [fontname="Monospace",fontsize="8"]
+
+  subgraph clusterN {
+    label="null graph"
+  }
+
+  subgraph clusterE {
+    label="Empty or edgeless graph"
+    e0
+    e1
+  }
+
+  "node"
+  "node" -> "node" [label="loop"]
+  "node" -> "node2" [label="edge"]
+
+  subgraph clusterS {
+    label="Directed Graph"
+    subgraph clusterS2 {
+      label="Subgraph, simple, size=1"
+      s0 -> s1 [label="link"]
+    }
+  }
+
+  subgraph clusterM {
+    label="Multidigraph"
+    source -> sink
+    source -> sink
+  }
+
+  subgraph clusterP {
+    label="Psuedograph: loop and multiple edges"
+    p0 -> p0 [label="loop"]
+    p0 -> p1
+    p1 -> p0
+  }
+
+}
+

@@ -2,11 +2,19 @@
 <head>
   <title>Programming Language Model</title>
   <style type="text/css">
+    BODY {
+      font-family: Arial, Helvetica, serif;
+    }
     #container {
       width:50em;
     }
     .unsure {
       color:Red;
+    }
+    CODE {
+      font-family:Courier New, Monospace, sans-serif;
+      font-size:small;
+      color:#030;
     }
     BLOCKQUOTE {
       font-family:serif;
@@ -19,19 +27,25 @@
       border:1px dashed #6c3;
       padding:1em;
       margin:1em;
-      font-family:Courier New, sans-serif;
+      font-family:Courier New, Monospace, sans-serif;
+      font-size:small;
       white-space:pre;
       color:Black;
       background-color:#cfc;
     }
-    span.comment {
-      color:#bbb;
+    SPAN.comment {
+      color:#999;
     }
-    div.note {
+    DIV.note {
       margin:1em;
       padding:1em;
       border:1px solid #ccc;
       background-color:#eee;
+    }
+    DIV.quote {
+      width:30em;
+      margin-left:5em;
+      text-align:justify;
     }
     .small {
       font-size:small;
@@ -45,26 +59,21 @@
 <h1>Programming Language Model</h1>
 <hr>
 
-<h2>State Assumptions</h2>
-<ul>
-  <li>A defect is an instruction/data interaction the full effects of which are
-      not well-defined by the language or perfectly controlled by the application.
-  <li>Software is written by humans.
-  <li>Humans are imperfect.
-  <li>Therefore, all software contains defects.
-  <li>The likelihood that
-  <li>Most if not all defects are diagnosable given the proper information.
-  <li>It is possible to define a general framework for describing a
-      programming language.
-  <li>Using this framework it would be possible to create models describing
-      optimal, correct constructs for programming languages in general, and
-      specific languages.
-</ul>
-
-<h2>Assert</h2>
-<p>
-Given such a model M(L) for programming language L and a program P(L)
-it should be possible to detect, diagnose and fix defects.
+<h2>Assertions</h2>
+<ol>
+  <li>Modern computers are finite, specialized implementations of the infinite, general-purpose Turing machine.
+  <li>They contain the capability to calculate anything that can be calculated; however, writing software
+      directly for the low-level capabilities is difficult.
+  <li>Complexity, portability problems and a low code density between CPU instructions and abstract, algorithmic
+      thought make software development at this level error-prone, slow and tedious.
+  <li>High-level programming languages, implement a virtual machine
+      on top of the CPU. While differing in implementation, all share some common infrastructural
+      features in order to reduce the complexity and error-prone nature of engineering software.
+  <li>It is my goal to develop a methodology and accompanying software in order to better understand the
+      precise nature of high level languages and software that is written in them.
+      I hope to be able to analyze, detect defects in and perform other useful transformations on the
+      multitude of applications developed in high level languages.
+</ol>
 
 <h2>Model Description</h2>
 
@@ -77,11 +86,15 @@ for which the following properties are well-defined:
 
   <ul>
     <li>scoping
-    <li>type(s)
-    <li>storage
+    <li>types
     <li>values
+    <li>storage
     <li>functions that modify scoping, types, storage, values and functions(*)
   </ul>
+
+<p>
+<em>These features all exist in order to provide an interface to the underlying machine's power
+while reducing complexity and reducing potential programming errors.</em>
 
 <p>
 Such that a program P would be a directed graph of instruction calls
@@ -111,25 +124,58 @@ language:
 <p>
 <h3>Scoping</h3>
 
+<p>
+Any programming language providing accessible storage 
+
+<p>Familiar examples of such programming languages:
+<ol>
+  <li>Algebra
+  <li>A calculator containing an <a href="http://www.calculator.org/CalcHelp/basics.htm">M+</a> or equivalent key
+</ol>
+
+<p>Languages that do not qualify:
+<ol>
+  <li>Simple arithmetic expressions
+  <li>Stack-based environments that do not allow explicit access to stack storage
+</ol>
+
+<p>
+Hmm that makes me think now... you don't really ever need directly-accessible storage, do you?
+A stack-based machine is Turing-complete, so why do we have register-based machines?
+
+<p>
+Research 
+
+<p>
+<div class="quote">
+The advantage of stack machines ("0-operand instruction set") over accumulator machines
+("1-operand instruction set") and register machines ("2-operand instruction set" or a
+"3-operand instruction set") is that programs written for a "0-operand" instruction set
+generally have higher code density than equivalent programs written for other instruction sets.
+</div>
+
 <h4>Definition</h4>
 
 <p>
 <ul>
-  <li>
-  Consider a program P as a directed graph G(P).
-  G(P) contains one node for each distinct component of P.
-
-  <li>
-  Let us define an edge e of G(P) as a defined relationship between two
-  components of program P.
-
-  <li>
-  Let us define the complexity C(P) as the size of the set of edges E(G(P))
-
-  <li>
-  Given such a model, LET US DEFINE A SCOPE as a subgraph S within G(P)
-  such that the nodes S(n) within it may be addressed as a single unit.
+  <li>Consider program P as a directed graph G(P) where each type, value,
+      storage or function of P is represented by a vertex.
+  <li>Let us define an edge e of G(P) as a defined relationship between two
+      components of program P.
+  <li>Let us define <i>complexity</i> C as the number of edges |E(G(P))|
+  <li>Given such a model, LET US DEFINE A SCOPE as a subgraph S within G(P)
+      such that the nodes S(n) within it may be addressed as a single unit.
 </ul>
+
+<p>
+<b>The purpose of scoping is to reduce the complexity C(P) by limiting the
+number of allowable interactions between components.</b>
+
+<p>
+<div class="quote">
+  "Controlling complexity is the essence of computer programming."<br>
+<div style="text-align:right">&mdash; Brian Kernighan</div>
+</div>
 
 <p>
   <span>A Scope is a subgraph within the graph of a program.</span>
@@ -137,17 +183,7 @@ language:
 
 <p>
 In the absence of scoping any component of a program may interact any other part.
-That is, the size of set E(G(P)) is !C(P)
-
-<p>
-<b>The purpose of scoping is to reduce the complexity C(P) by limiting the
-number of allowable interactions between components.</b>
-
-<p>
-<blockquote>
-  "Controlling complexity is the essence of computer programming."
-                                          -- Brian Kernighan
-</blockquote>
+That is, the size of set E(G(P)) is C(P)<sup>2</sup>
 
 <p>
 Note that scoping itself does not imply any one particular algorithm for
@@ -176,7 +212,7 @@ Scoping algorithms include, but are not limited to, the following:
   error(symbol + " not found")
 </div>
     <p>Complexity:
-    &Theta;(1). For any given symbol there is exactly one answer.
+    &Theta;(1). Resolution involves searching a single scope.
   </dd>
 
   <dt>Static/lexical scoping</dt>
@@ -191,21 +227,21 @@ Scoping algorithms include, but are not limited to, the following:
     <code>g(f(x)) == f(x) == x</code>
     <p>
     Psuedocode:
-<div class="psuedocode">resolve(symbol, declContext):
+<div class="psuedocode">resolve(symbol, declCtx):
   <span class="comment"># check decl</span>
-  if declContext.declare[symbol]:
-    return declContext.declare[symbol]
+  if declCtx.declare[symbol]:
+    return declCtx.declare[symbol]
   <span class="comment"># anywhere else to look?</span>
-  if not declContext.parent:
+  if not declCtx.parent:
     error(symbol + " not found")
   <span class="comment"># recursive parent search</span>
-  return resolve(symbol, declContext.parent)
+  return resolve(symbol, declCtx.parent)
 </div>
     <p>Complexity:
-    &Theta;(n), where n is the number of total scopes.<br>
-    Because the result of <code>resolve(symbol, declContext)</code> is invariant
+    &Theta;(n), where n is the number of scope nesting levels.<br>
+    However, because the result of <code>resolve(symbol, declCtx)</code> is invariant
     a program graph may be rewritten by replacing <code>symbol</code> with the results
-    of <code>resolve(symbol, declContext)</code>
+    of <code>resolve(symbol, declCtx)</code>
   </dd>
 
   <dt>Dynamic scoping</dt>
@@ -220,15 +256,15 @@ Scoping algorithms include, but are not limited to, the following:
     <code>g(f(x))</code> == <code>g.x</code>
     <p>
     Psuedocode:
-<div class="psuedocode">resolve(symbol, execContext):
+<div class="psuedocode">resolve(symbol, execCtx):
   <span class="comment"># current context</span>
-  if execContext.syms[symbol]: 
-    return execContext.syms[symbol]
+  if execCtx.syms[symbol]: 
+    return execCtx.syms[symbol]
   <span class="comment"># anywhere else to look?</span>
-  if not execContext.parent:
+  if not execCtx.parent:
     error(symbol + " not found") 
   <span class="comment"># recursive parent search</span>
-  return resolve(symbol, execContent.parent) 
+  return resolve(symbol, execCtx.parent) 
 </div>
     <p>Complexity:
     &Theta;(n<sup>c</sup>), where n is the number of total scopes and c is the number of
@@ -248,6 +284,12 @@ Informally a Software Object can be defined as an abstract collection
 of one or more unique Software Object components for which the
 accessibility by other Software Objects is defined by a scoping
 algorithm.
+
+<p>
+<div class="note">
+NOTE: Not to be confused with Object-Oriented Programming, a
+programming paradigm which is currently popular.
+</div>
 
 <div><img src="graph/software-object-abstract.gif"></div>
 
@@ -275,33 +317,80 @@ A Software Object has the following properties:
 
 <h3>Type</h3>
 
+<div class=quote>
+&quot;a tractable syntactic method for proving the absence of
+certain program behaviors by classifying phrases according to
+the kinds of values they compute.&quot;<br>
+Pierce, Benjamin (2002). Types and Programming Languages. MIT Press. ISBN 0-262-16209-1.
+</div>
+
 <p>
-  &lt;Scope&gt; &lt;Type&gt;
+  Fundamentally on the binary machines of today all data is an untyped vector
+  of bits. This allows for errors such as:
+
+  <ul>
+    <li>performing operations on operands of an incompatible type
+    <li>erroneously copying between storage of incompatible types
+  </ul>
+
+<p>
+  Type systems can eliminate these errors.
 
 <p>
   Language must contain one or more well-defined types.
+  A well-defined Type includes definition of storage and
+  results of all operations defined that that Type.
 
+<dl>
+  <dt>Compatibility with other Types</dt>
+  <dd>
+<div class="psuedocode">bit Type.equal     (Type a, Type b) <span class="comment"># are the Types equal?</span>
+bit Type.compatible(Type a, Type b) <span class="comment"># are conversions between a &harr; b meaningful?</span>
+</div>
+  </dd>
+
+  <dt>Range</dt>
+  <dd>
+<div class="psuedocode">Value Type.minimum () <span class="comment"># minimum representable</span>
+Value Type.maximum () <span class="comment"># maximum representable</span>
+</div>
 <p>
-  A well-defined type includes definition of storage and
-  results of all operations.
+a Type may optionally include one or more placeholder Value denoting a Value is out of calculable range.
+<div class="psuedocode">Value Type.-&#8734;() <span class="comment"># too small</span>
+Value Type.&#8734; () <span class="comment"># too large</span>
+Value Type.&#917; () <span class="comment"># step</span>
+</div>
+  </dd>
 
-<div class="psuedocode">bit equal(Type a, Type b)</div>
+  <dt>Ordinality</dt>
+  <dd>
+<div class="psuedocode">bit Type.equal  (Value a, Value b) <span class="comment"># </span>
+ord Type.compare(Value a, Value b) <span class="comment"># </span>
+</div>
+  </dd>
+
+</dl>
 
 
 <h3>Value</h3>
 
 <p>
-  &lt;Scope&gt; &lt;Type&gt; &lt;Value&gt;
+For out purposes a Value can be considered a finite bitwise serialization of some external entity.
+The interpretation of which is completely dependent on Value's Type.
+
+<p>
+All computing and algorithms are fundamentally about Values.<br>
+Types facilitate meaningful comparison between Values.<br>
+Storage is a way of shuffling more Values than one's machine can immediately handle for later retrieval.<br>
+Functions are methods of creating Values from Values.<br>
+
+<p>
+  &lt;Type&gt; &lt;Value&gt;
 
 <p>
   With the following requirements:
 
   <ol type="a">
-    <li>Scope
-    <ol>
-      <li>defined
-      <li>valid
-    </ol>
     <li>Type
     <ol>
       <li>defined
@@ -320,48 +409,59 @@ A Software Object has the following properties:
   one or more value states throughout the lifetime of that
   value.
 
-<p class="unsure">
-Value ::= &lt;Storage&gt; | &lt;Literal Or Constant&gt;
+<p>
+  All languages that allow conversion between Values of two or more Types must define an interface equivalent to:
 
-  Let Value now refer to any object that yields a value;
-  Storage or a Literal or Constant value
-</p>
+<div class="psuedocode">Value convert(Type from, Type to, Value)</div>
+
 
 <h3>Storage</h3>
 
 <p>
-  &lt;Scope&gt; &lt;Type&gt; &lt;Identifier&gt;
+Storage is an entity capable of storing and retrieving Values.
 
 <p>
-  Let Storage S(Scope, Type, Identifier) be a software
+  &lt;Type&gt; &lt;Identifier&gt;
+
+<p>
+  Let Storage S(Type, Identifier) be a software
   object that defines the following interface:
 
-<div class="psuedocode">Value  read(Scope, Type)
-()    write(Scope, Type, Value)
+<div class="psuedocode">Value  read()
+()    write(Value)
 </div>
 
 <p>
 Such that read() and write() complement each other.
 Given:
 
-<div class="psuedocode">V<sub>1</sub> := read(Sc, T)
-write(Sc, T, V<sub>1</sub>)
-V<sub>2</sub> := read(Sc, T)
+<div class="psuedocode">V<sub>1</sub> := read()
+write(V<sub>1</sub>)
+V<sub>2</sub> := read()
 </div>
 
 <p>
-The following always holds:
+The following must always hold:
 
 <div class="psuedocode">V<sub>1</sub> == V<sub>2</sub></div>
 
 <p>
-Informally, that the contents of Storage must be equivalent before and after
-a read and then write of itself.
+Informally, Storage must be capable of read()ing back exactly what we write() and vice versa.
+
+<p>
+  Storage declaration must...
+  <ol type="a">
+    <li>Value
+    <ol>
+      <li>must be equal to Storage's Type, i.e. <code>Type.equal(S<sub>0</sub>.type, V<sub>0</sub>.type) == 1</code>
+    </ol>
+  </ol>
 
 <div class="note">
 NOTE: This precludes familiar asynchronous read/write locations from qualifying
 as Storage.
 <ul>
+  <li>CPU flag-type registers
   <li>Interrupts
   <li>Memory-mapped I/O
   <li class="unsure">libc's <code>errno</code> (actually... i'm not sure if this qualifies or not...)
@@ -369,49 +469,13 @@ as Storage.
 </ul>
 </div>
 
-<p>
-  Storage declaration must...
-
-  <ol type="a">
-    <li>Scope
-    <ol>
-      <li>defined
-      <li>valid
-    </ol>
-    <li>Type
-    <ol>
-      <li>defined
-      <li>compatible with Value (may be Any)
-    </ol>
-    <li>Identifier
-    <ol>
-      <li>be unique as defined by the scoping rules of the language
-    </ol>
-    <li>Value
-    <ol>
-      <li>defined
-      <li>compatible with Type
-    </ol>
-  </ol>
-
-<p>
-  Storage thus declared must, at a minimum...
-
-  <ol type="a">
-    <li>Lifetime/Extent
-    <ol>
-      <li>It must be possible that storage is written to at least once in its lifetime.
-      <li>It must be possible that storage is read from at least once in its lifetime.
-    </ol>
-  </ol>
-
 
 <h3>Function(Storage out, Value in)</h3>
 
 <p>
 Abstract:
 
-<div class="psuedocode">out &lt;- fn(in)</div>
+<div class="psuedocode">out &larr; fn(in)</div>
 
 <p>
   An abstraction whereby input Value(s) are transformed and
@@ -467,16 +531,14 @@ parent_scope = incr(parent_scope)
 <p>
 Abstract
 
-<div class="psuedocode">dst &lt;- src</div>
+<div class="psuedocode">dst &larr; src</div>
 
 <ol>
-  <li>type compatibility
-  <li>if src is storage, it must have been previously written to.
+  <li><code>Type.compatible(dst.Type, src.Type) == 1</code> <span class="comment"># types are at least compatible</span>
+  <li>if <code>src</code> is storage, it must have been previously written to.
   <li>
     <p>
-    dst should not already contain src value
-    if it is not possible for dst to contain anything other than
-    the value being written to it. consider:
+    it must be possible for <code>dst</code> to contain a Value other than <code>src</code>
 
 <div class="psuedocode">a := b
 a := b
@@ -491,15 +553,15 @@ b := a
 </div>
 
     <p>
-    note that there are many cases where this can appear to happen, but does
-    not, because what is being read/written is not Storage because it does not
-    meet the requirements for storage
+    note that there are many cases where this can <i>appear</i> to happen
+    in existing code, however what is being read/written is not Storage
+    because it does not meet the <a href=#storage_requirements">requirements for storage</a>
       <ol>
         <li>C's <code>volatile</code>. 'src' may be memory-mapped i/o or something similar
         <li>threaded code. research possibilities.
       </ol>
     <p>
-    <u>Exceptions</u>
+    <h4>Exceptions</h4>
       <dl>
         <dt>debouncing</dt>
         <dd>
@@ -508,6 +570,21 @@ b := a
         </dd>
       </dl>
  </ol>
+
+<div>
+<img src="graph/io-abstract.gif">
+</div>
+
+<p>
+  Storage thus declared must, at a minimum...
+
+  <ol type="a">
+    <li>Lifetime/Extent
+    <ol>
+      <li>It must be possible that storage is written to at least once in its lifetime.
+      <li>It must be possible that storage is read from at least once in its lifetime.
+    </ol>
+  </ol>
 
 <pre>
 
@@ -536,6 +613,21 @@ Brainstorm way ahead:
 Reference:
 
 <ol>
+  <li><a href="http://en.wikipedia.org/wiki/Algorithm">Algorithm</a>
+  <li><a href="http://en.wikipedia.org/wiki/Algorithm_characterizations">Algorithm characterizations</a>
+
+  <li><a href="http://en.wikipedia.org/wiki/Turing_machine">Turing_machine</a>
+  <li><a href="http://en.wikipedia.org/wiki/Stack_machine">Stack machine</a>
+  <li><a href="http://doc.cat-v.org/inferno/4th_edition/dis_VM_design">The design of the Inferno virtual machine</a>
+
+  <li><a href="http://en.wikipedia.org/wiki/High-level_programming_language">High-level programming language</a>
+  <li><a href="http://en.wikipedia.org/wiki/Type_theory">Type_theory</a>
+  <li><a href="http://en.wikipedia.org/wiki/Type_system">Type system</a>
+  <li><a href="http://en.wikipedia.org/wiki/Data_type">Data type</a>
+  <li><a href="http://en.wikipedia.org/wiki/Primitive_data_type">Primitive data type</a>
+  <li><a href="http://en.wikipedia.org/wiki/Kind_(type_theory)">Kind (type theory)</a>
+  <li><a href="http://en.wikipedia.org/wiki/Type_conversion">Type conversion</a>
+
   <li>Thompson, Ken, <a href="http://www.ece.cmu.edu/~ganger/712.fall02/papers/p761-thompson.pdf">Reflections on Trusting Trust</a> [1984]
   <li>Collins, Michael, <a href="http://www.ece.cmu.edu/~koopman/des_s99/formal_methods/">Formal Methods</a> [1998]
   <li>Fleck, Arthur C., <a href="http://www.cs.uiowa.edu/~fleck/181.html">Formal Methods in Software Engineering</a>
@@ -543,11 +635,26 @@ Reference:
   <li><a href="http://rewriting.loria.fr/">Rewriting Homepage</a>
   <li><a href="http://en.wikipedia.org/wiki/Graph_rewriting">Graph rewriting</a>
 
+  <li><a href="http://en.wikipedia.org/wiki/Elementary_algebra">Elementary algebra</a>
   <li><a href="http://en.wikipedia.org/wiki/Scoping">Scoping</a>
   <li><a href="http://en.wikipedia.org/wiki/Big_O_notation">Big O notation</a>
+
   <li><a href="http://en.wikipedia.org/wiki/Graph_(data_structure)">Graph (data structure)</a>
   <li><a href="http://en.wikipedia.org/wiki/Graph_theory">Graph theory</a>
   <li><a href="http://en.wikipedia.org/wiki/Glossary_of_graph_theory">Glossary of graph theory</a>
+  <li><a href="http://en.wikipedia.org/wiki/Graph_drawing">Graph drawing</a>
+  <li><a href="http://en.wikipedia.org/wiki/Loop_(graph_theory)">Loop (graph theory)</a>
+  <li><a href="http://en.wikipedia.org/wiki/Multigraph">Multigraph</a>
+  <li><a href="http://en.wikipedia.org/wiki/Dominating_set">Dominating set</a>
+  <li><a href="http://en.wikipedia.org/wiki/Independent_set_(graph_theory)">Independent set</a>
+  <li><a href="http://en.wikipedia.org/wiki/Maximal_independent_set">Maximal independent set</a>
+  <li><a href="http://en.wikipedia.org/wiki/Bipartite_graph">Bipartite graph</a>
+  <li><a href="http://en.wikipedia.org/wiki/Edge_covering">Edge covering</a>
+  <li><a href="http://en.wikipedia.org/wiki/Matching_problem">Matching problem</a>
+
+  <li><a href="http://en.wikipedia.org/wiki/Injective_function">Injective function</a>
+  <li><a href="http://en.wikipedia.org/wiki/Bijective_function">Bijective function</a>
+  <li><a href="http://en.wikipedia.org/wiki/Surjective_function">Surjective function</a>
 
   <li><a href="http://en.wikipedia.org/wiki/Formal_semantics_of_programming_languages">Formal semantic of programming languages</a>
   <li><a href="http://en.wikipedia.org/wiki/Structured_programming">Structured programming</a>
@@ -557,10 +664,8 @@ Reference:
   <li><a href="http://en.wikipedia.org/wiki/Domain_(mathematics)">Domain_(mathematics)</a>
   <li><a href="http://en.wikipedia.org/wiki/Codomain">Codomain</a>
   <li><a href="http://en.wikipedia.org/wiki/Category_theory">Category_theory</a>
-  <li><a href="http://en.wikipedia.org/wiki/Type_theory">Type_theory</a>
   <li><a href="http://en.wikipedia.org/wiki/Programming_language_theory">Programming_language_theory</a>
-  <li><a href="http://en.wikipedia.org/wiki/Type_system">Type_system</a>
-  <li><a href="http://en.wikipedia.org/wiki/Turing_machine">Turing_machine</a>
+  <li><a href="http://en.wikipedia.org/wiki/Serialization">Serialization</a>
 
 </ol>
 

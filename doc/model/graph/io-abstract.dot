@@ -1,0 +1,19 @@
+
+digraph G {
+  subgraph cluster0 {
+    label="program";
+    fontsize="10";
+    foo [fontsize="10"];
+  }
+  subgraph cluster1 {
+    label="io";
+    fontsize="8";
+    stdin [fontsize="10"];
+    stdout [fontsize="10"];
+    stderr [fontsize="10"];
+  }
+  foo -> stdin
+  foo -> stdout
+  foo -> stderr
+}
+
