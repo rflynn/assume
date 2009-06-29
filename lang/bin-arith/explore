@@ -12,7 +12,7 @@ How can we define a proper program?
 
   Grammar
 
-    val  ::= '0' | '1' | value
+    val  ::= '0' | '1' | val
     op   ::= '+' | '-'
     expr ::= val | op val | expr op expr
 

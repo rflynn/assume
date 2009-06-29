@@ -1,0 +1,57 @@
+
+let's map this out conceptually with the simple but non-trivial example
+grammar given by binary arithmetic
+
+val  ::= '0' | '1' | val
+op   ::= '+' | '-'
+expr ::= val | op val | expr op expr
+
+let's map this out by hand...
+
+Term denotes terminal, i.e. a literal value
+
+Nont denotes a non-terminal, i.e. a symbolic, pattern-based match, which
+may contain maybE possible matches and which may be recursive.  All non-
+terminals appear on the left-side of a foo ::= bar expression.
+
+val  ::= [
+          [(Term,'0')],
+          [(Term,'1')],
+          [(Nont,val)]
+         ]
+op   ::= [
+          [(Term,'+')],
+          [(Term,'-')]
+         ]
+expr ::= [
+          [(Nont,val)],
+          [(Nont,op), (Nont,val)],
+          [(Nont,expr), (Nont,op), (Nont,expr)]
+         ]
+
+expr then, is our root. we'll declare this explicitly.
+
+what is the first generated match then?
+the first pattern of 'expr' is a non-terminal 'val', so we go to 'val'.
+  the first pattern of 'val' is a terminal '0'.
+  return to expr.
+there are no items left in the first pattern of expr, therefore we have our first match.
+
+'0'
+
+next match, start over. we'll have to remember we were on expr[0], val[0] previously.
+we'll want to iterate to val[1] and match 'val' and 'expr'
+
+'1'
+
+next match from expr[0],val[1]. val[2] is non-terminal. disregard that it points to itself.
+do we generate a match from val first, then pass to non-terminal, or just pass?
+
+  perhaps for the generator we should keep track of the requested length of the pattern,
+  beginning with 0. that length would control whether or not patterns generated themselves
+  or deferred to non-terminals they pointed to.
+  
+  but when do they start generating matches? once they're n levels away from the "bottom",
+  where the bottom is the 
+
+

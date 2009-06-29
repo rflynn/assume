@@ -16,6 +16,8 @@ Goals
   * Parse programs written in HLLs and validate against language definition.
   * Detect ambiguous, non-canonical, defect-containing constructs.
   * Optionally transform source code.
+  * Ultimate goal is to be able to detect potential defects in large codebases
+    written in the C programming language.
   
 References
 
