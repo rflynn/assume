@@ -31,6 +31,57 @@ expr ::= [
 
 expr then, is our root. we'll declare this explicitly.
 
+                                  v----------------------+
+    val <-----+    op <--+       expr <----------------+ |
+  +--+----+   |   +---+  |  +------+-----------+       | |
+ "0" "1" val -+  "+" "-" | val   op,val  expr,op,expr -+ |
+                         +-------+        +--------------+
+
+length 1
+  expr[0] -> val[0] "0"
+      OK  <-
+  expr[0] -> val[0] "1"
+      OK  <-
+  expr[0] -> val[2] ran out
+  expr[1] -> op[0]
+    incomplete <-
+  expr[1] -> op[1]
+    incomplete <-
+
+ok, so what's the matching algorithm? clearly it needs to be recursive, it
+needs to be self-limiting, it needs to track its own state and re-start
+where it left off, it needs to be breadth-first.
+
+algorithm:
+
+def domatch(root, state, index, max):
+  # based on a root term tree, a match state, a current index and a maximum
+  # cnt, find the next combinatorial match without traversing above the
+  # current depth.
+  # may fail. return 0 on failure, 1 on match. the combination of match is
+  # recorded in state[].
+  # calls self recursively, descending into matches, decreasing max along
+  # the way. then check results of sub-calls on the way back out to see if
+  # they matched. if they fail, try next combination at current level and
+  # retry. if we fail at current level return failure to caller.
+  if 0 == max
+    return 0 # ran out
+  if 1 == max
+    # must do the dirty work....
+    # TODO!!!!
+  # try to match recursively for my state
+  if domatch(root, state, index+1, max-1)
+    # ensure that we match our full length... SHIT I'M NOT ACCOUNTING FOR THIS
+    return 1
+  # could not match a submatch of current match, we'll try a different combo
+  # at the current level and try again
+  while state[index].index < state[index].length-1:
+    state[index].index = state[index].index + 1
+    if domatch(root, state, index+1, max-1)
+      return 1
+  # exhausted all matches at my level. give up!
+  return 0
+
 what is the first generated match then?
 the first pattern of 'expr' is a non-terminal 'val', so we go to 'val'.
   the first pattern of 'val' is a terminal '0'.
@@ -51,7 +102,16 @@ do we generate a match from val first, then pass to non-terminal, or just pass?
   beginning with 0. that length would control whether or not patterns generated themselves
   or deferred to non-terminals they pointed to.
   
-  but when do they start generating matches? once they're n levels away from the "bottom",
-  where the bottom is the 
+  but when do they start generating matches? each pattern that generates a non-zero-length
+  sequence subtracts one from the total to be matched and passes that on to any further patterns,
+  until we hit zero, in which case we are done.
+
+we'll want to operate breadth-first in order to get a nice sampling from the entire grammar;
+depth-first traversal would give us a pathalogical "000000000000000000000000..."
+
+the trick is in ensuring the satisfaction of all patterns such that we make our way back
+up the stack to the original call. there will be cases where we are not able to match the
+exact length required, for example trying to match 1 to expr->op,val. op,val clearly needs at
+least 2 symbols. in this case we need to indicate failure, and move on.
 
 
