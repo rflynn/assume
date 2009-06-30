@@ -1,0 +1,248 @@
+<html>
+<head>
+  <title></title>
+  <style type="text/css">
+  DT {
+    font-weight:bold;
+  }
+  DD {
+    margin-bottom:1em;
+  }
+  EM {
+    font-family:non serif;
+    color:Blue;
+  }
+  .error  {
+    color:Red;
+    font-weight:bold;
+  }
+  </style>
+</head>
+<body>
+
+<div style="width:50em">
+
+<h1>Object Axioms</h1>
+
+<p>
+this is a psuedocode-style attempt at the definition of a set of axiomatic
+rules for the description of software objects.
+
+<h2>FOUNDATIONAL</h2>
+
+TODO: we need proper references to set theory, math, etc.
+
+<h3>Glossary</h3>
+<ul>
+  <li>bitvector
+  <li><a href="programming-language-model.html#object">object</a>
+</ul>
+
+<dl>
+  <dt>that which can not be found does not exist. (exist.unfound)</dt>
+  <dd>
+  an object, once declared, if not later retrievable is equivalent to a non-existing object.
+  </dd>
+
+  <dt>that which cannot be used does not exist. (exist.unused)</dt>
+  <dd>
+  a declared object, if never potentially used is equivalent to a non-existing object.
+  </dd>
+
+  <dt>A.B /= B.A (order.matters)</dt>
+  <dd>
+  unless explicitly stated otherwise, the order of in which instructions are executed produce
+  different answers.
+  <p>
+  NOTE: this should be part of a core mathematics or computational axiom set
+  </dd>
+</dl>
+
+<h2>OBJECT DEFINITION</h2>
+
+<dl>
+
+  <dt>let an <em>object</em> be a non-empty, finite <em>set</em> of objects. (obj.def)</dt>
+  <dd>
+    <ul>
+      <dt>let every object have the property
+      <li>let an object's minimum size be one.
+      <li>let an object so contained be within another be known as a <em>member</em>.
+      <li>let the relationship of object to member be known as <em>parent</em>.
+      <li>let the relationship of a member to its parent be <em>child</em>.
+      <li>let the relationship between two child members of the same parent be <em>sibling</em>.
+    </ul>
+  </dd>
+
+  <dt>let an object have the property <em>primitive</em> (ob.prim)</dt>
+  <dd>
+    <ul>
+      <li>let the primitive property be a boolean, being one of {<em>true</em>,<em>false</em>}
+      <li>a primitive object must contain, at minimum, a bitvector of known, fixed size
+      <li>a non-primitive object must contain one or more of either primitive members, non-primitives or both.
+    </ul>
+  </dd>
+
+  <dt>let an object have the property <em>type</em>(obj.type)</dt>
+  <dd>
+    <ul>
+      <li>let objects of the same type contain the same number of members, and let their members be of the same type (bijection).
+      <li>objects that are bijective are not necessarily the same type.
+    </ul>
+  </dd>
+
+</dl>
+
+<h2>OBJECT MEMBERS</h2>
+
+<dl>
+
+  <dt>object membership has a property called <em>exposure</em> (obj.mem.expose)</dt>
+  <dd>
+  <ul>
+    <li>let an object define a property <em>exposure</em> for each member.
+    <li>let the exposure of an object member be one of {<em>exposed</em>,<em>hidden</em>}.
+  </ul>
+  NOTE: exposure is a property of the membership relation, not of the member object itself.
+  </dd>
+
+  <dt>let the exposure of all object members to other members of the same object be exposed (obj.mem.expose.intra)</dt>
+  <dd>
+  i.e. members of the same object can all see each other.
+  </dd>
+
+  <dt>every object which exists must contain at least one member object which is exposed to at least one other object. (obj.mem.expose.min)</dt>
+  <dd>
+  derived from above. by definition if it does not then it does not exist.
+  </dd>
+
+
+  <dt><strike>let child member exposure to objects outside its parent be uniform (obj.mem.expose.extra.uniform)</strike></dt>
+  <dd>
+  <strike>
+  <ul>
+    <li>let an exposed member be a child about which its parent makes accessible to another, extra-parent object.
+    <li>let a hidden member be a child about which 
+    <li>member exposure is defined once per member for all extra-parent objects, not on a per extra-parent-object basis.Q
+  </ul>
+  </strike>
+  <div class="error">FIXME: Nope, C++ friend</div>
+  </dd>
+
+  <dt>an object has complete knowledge/control over each of its members. (obj.mem.intra.know)</dt>
+  <dd>
+  no external object has more control over an object's member than it does.
+  an object is ultimately responsible for its own contents.
+  </dd>
+
+  <dt>an object has incomplete knowledge/control over the contents of other objects. (obj.mem.control.extra)</dt>
+  <dd>
+  conversely...<br>
+  an object may not know about all members of another object which exist.
+  furthermore, it may not know what it does not know.
+  an object's knowledge about other objects is always incomplete.
+  </dd>
+
+  <dt>an object containing two or more exposed members may have those called in any order. (obj.mem.ctrl.extra.indeterminate)</dt>
+  <dd>
+    Dependencies:
+    <ul>
+      <li>obj.mem.expose.min
+      <li>obj.mem.ctrl.extra
+    </ul>
+  </dd>
+
+</dl>
+
+<h2>OBJECT MEMBER INTER-RELATIONSHIP</h2>
+
+<dl>
+
+  <dt>every object member has as its input a non-empty subset of its parent object's members (obj.mem.input)</dt>
+  <dd>
+  (includes self.)
+  an object like an integer has itself as both input and output.
+  a member object of function type could reference at least one member of the object.
+  </dd>
+
+  <dt>infer: an object member that does not reference a member of its parent object is not a member of the object (obj.mem.exclude)</dt>
+  <dd>
+  an object that does not depend on any input or does not affect the output
+  of any other member of its parent is equivalent to the same member being
+  outside of that object.
+  </dd>
+
+</dl>
+
+<h2>OBJECT STATE</h2>
+
+<dl>
+  <dt>let the set of values of all an object's members at a point in time be known as the object's <em>state</em> (obj.state.def)</dt>
+  <dd>
+  </dd>
+
+  <dt>a change in state of any member constitutes a change in the parent state (obj.state.change)</dt>
+  <dd>
+  Dependencies:
+  <ul>
+    <li>obj.state.def
+  </ul>
+  </dd>
+
+  <dt>infer: an object's state as the output from an exposed member may be fed to the input of any other exposed member. (obj.mem.state.io)</dt>
+  <dd>
+  because exposed members can be called in any order, the resulting object
+  state output from any exposed member may be used as the input to any
+  other exposed member.
+  </dd>
+
+  <dt>object state as defined by any exposed member output must be valid input to all other exposed members (obj.mem.state.valid)</dt>
+  <dd>
+
+  Because order matters, because we can't control the actions of external objects, because an external access may change our object state and because our members take a subset of object state as their input...
+
+  Dependencies:
+  <ul>
+    <li>order.matters
+    <li>obj.mem.ctrl.extra
+    <li>obj.mem.input
+    <li>obj.mem.state.io
+  </ul>
+
+  <p>
+  Example:
+<pre>
+    Obj o:
+      foo = "x"     # assign, return "x"
+      bar(): foo = NULL
+      baz(): foo[0] #undefined for NULL
+    
+    assuming foo,bar,baz are all exposed, they may be called in the following combinations:
+    foo,bar -&gt; defined
+    bar,foo -&gt; defined
+    foo,baz -&gt; defined
+    baz,foo -&gt; defined
+    bar,baz -&gt; undefined # this order results in an undefined operation
+    baz,foo -&gt; defined
+</pre>
+  </dd>
+
+  <dt>objects containing indentical states can be considered identical (obj.state.equality)</dt>
+  <dd>
+  QUESTION: how do they inspect hidden members? objects may contain hidden
+            members that are inaccessible to other objects. how do we resolve
+            this?
+            do we define an "impartial observer" that is allowed access to all
+            object members? is omniscience implicit?
+            if so, then true equality cannot be implemented by an object itself,
+            but only by an outsider.
+            but the term "equality" is an overloaded one... let us instead define
+            "identiciality"
+  </dd>
+
+</dl>
+
+</div>
+
+</body>
+</html>
