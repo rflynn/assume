@@ -1,5 +1,7 @@
 
-the "dangling else" problem
+C has a bunch of problems, let's elucidate and consider them:
+
+* the "dangling else" problem
 
   if (a) if (b) else c;
 
@@ -7,8 +9,17 @@ the "dangling else" problem
 
   if (a){ if (b) else c; }
 
+* C has a bunch of keywords that are completely useless
 
-C has too many operators
+  auto
+  register
+
+* C has a bunch of features that are intended to make up for stupid compilers
+
+  register
+  
+
+* C has too many operators
 
   C99 defines 54 operators:
 
@@ -36,9 +47,9 @@ C has too many operators
 
   it's actually longer, but it's associativity and precedence are explicit.
 
-the assignment operations (i.e. +=) are worthless and should be removed
+* the assignment operations (i.e. +=) are worthless and should be removed
 
-the ternary operator ? is : ugly.
+* the ternary operator ? is : ugly.
   make it a standard macro. IF(foo, bar, baz)
 
 
@@ -48,5 +59,6 @@ the ternary operator ? is : ugly.
     <: :> <% %> %: %:%:
     
     bsl(), bsr(), bneg(), bxor(), bor(), band(), IF()
+
 
 

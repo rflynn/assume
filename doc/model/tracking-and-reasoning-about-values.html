@@ -46,14 +46,13 @@ from each possible source, and then total...
 </ul>
 
 <pre>
+
 0|  unsigned foo(unsigned i) {
 1|    if (i % 2)
 2|      i -= 6;
 3|    return i;
 4|  }
-</pre>
 
-<pre>
 because foo() is a function what we know about i depends.
 if foo() is static then
   we can know exactly who is calling it, its <em>dominators</em>.
@@ -65,7 +64,7 @@ else if foo() is part of a library with no well-defined entrypoint
 
 figure out range
 
-we should naively assume that i could be any possible unsigned value
+we should naively assume that it could be any possible unsigned value
 [UINT_MIN=0, UINT_MAX=0xfffffff]
 
 we should then, for each possible invocation of foo() from other places
@@ -74,9 +73,90 @@ in the program, try to ascertain the range of potential values.
 really, what we should do is track that range at every step of the entire
 program; then that information would be available.
 
-...
+so, assuming we don't know anything about who is calling foo(), let's
+see what we can see.
+
+we'll keep track of {[min,max],overflow?,overflow?,potential_error?}
+
+typedef uint8_t u8;
+
+0|  u8 foo(u8 i) {  /* i={[0,0xFF],0,0,0} */
+1|    if (i % 2)    /* i={[0,0xFF],0,0,0} */
+2|      i -= 6;     /* i={[0,0xFF],1,0,0} */
+3|    return i;     /* i={[0,0xFF],0,0,0} */
+4|  }
+
+so without any contextual clues we know that the function reduces the
+possible range of the input only slightly, and that given input in
+in the range [0,6) it will underflow.
+
+so let's say we notify the programmer of the potential underflow
+and he fixes it:
+
+0|  u8 foo(u8 i) {        /* i={[0,0xFF],0,0,0} */
+1|    if (i &gt; 5 &amp;&amp; i % 2) /* i={[7,0xFF],0,0,0} (6 doesn't pass % 2) */
+2|      i -= 6;           /* i={[1,0xFF],0,0,0} */
+3|    return i;           /* i={[0,0xFF],0,0,0} */
+4|  }
+
+now we know for certain that foo() cannot underflow.
+but that's an easy example, let's try a harder one.
+
+0|  u8 foo2(u8 i, u8 j) { /* i={[0,0xFF],0,0,0} j={[0,0xFF],0,0,0} */
+1|    if (i &gt; 5 &amp;&amp; i % j) /* i={[6,0xFF],0,0,0} j={[0,0xFF],0,0,1} */
+2|      i -= 6;           /* i={[0,0xFF],0,0,0} j={[0,0xFF],0,0,0} */
+3|    return i;           /* i={[1,0xFF],0,0,0} j={[0,0xFF],0,0,0} */
+4|  }
+
+since we don't know the value of either i or j there isn't much we can tell,
+but we can detect that, because j can be 0 on line 2 that using it as the
+right-hand operand to % will result in undefined behavior.
+
+now let's see what we can figure out if we track a variable through
+multiple functions
+
+0|  u8 bar(void) {
+1|    u8 i, sum = 0;
+2|    for (i = 0; i &lt; 10; ++i)
+3|      sum += foo(i); /* i={[0,9],0,0,0} sum={[0,0xFF,0,0,0} */
+4|    return sum; }
+5|  u8 foo(u8 i) {  /* i={[0,9],0,0,0} */
+6|    if (i % 2)    /* i={[0,9],0,0,0} */
+7|      i -= 6;     /* i={[0,9],1,0,0} */
+8|    return i; }   /* i={[0,9],0,0,0} */
 
 </pre>
+
+<hr>
+
+more generally, in order to analyze programs at a higher level perhaps we could
+classify functions like circuits:
+
+<h3>Muxer</h3>
+function reduces complexity of input
+<p>
+<ul>
+  <li>size_t strlen(const char *) - reduces strings to a single unsigned integer
+  <li>int isalpha(int) - reduces integer value to [0,1]
+</ul>
+
+<h3>Demuxer</h3>
+function increases complexity of input
+<ul>
+  <li>void *malloc(size_t bytes); /* turns unsigned int into unspecified void* */
+  <li>FILE *fopen(const char *path, const char *mode); /* turns 2 strings into a FILE * */
+</ul>
+
+<h3>Passthrough</h3>
+function does not increase or decrease the complexity of input
+<ul>
+  <li>int rand(void) - turns static seed integer into a new seed integer and copies it
+  <li>identity function x = id(x)
+  <li>(+1)
+  <li>get_next_foo()
+</ul>
+
+also, i think it would be helpful to identify 
 
 </div>
 
