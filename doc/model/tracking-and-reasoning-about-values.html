@@ -54,7 +54,28 @@ from each possible source, and then total...
 </pre>
 
 <pre>
-i's min/max is UINT_MIN and UINT_MAX
+because foo() is a function what we know about i depends.
+if foo() is static then
+  we can know exactly who is calling it, its <em>dominators</em>.
+else if foo() is not static but part of a standalone application with main()
+  we can know who is calling it by using whole program analysis to find out
+  which other objects in the program call foo()
+else if foo() is part of a library with no well-defined entrypoint
+  we can know only partially who calls it by using whole program analysis
+
+figure out range
+
+we should naively assume that i could be any possible unsigned value
+[UINT_MIN=0, UINT_MAX=0xfffffff]
+
+we should then, for each possible invocation of foo() from other places
+in the program, try to ascertain the range of potential values.
+
+really, what we should do is track that range at every step of the entire
+program; then that information would be available.
+
+...
+
 </pre>
 
 </div>
