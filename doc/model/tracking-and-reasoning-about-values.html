@@ -1,0 +1,63 @@
+<html>
+<head>
+  <title>Tracking and Reasoning About Values</title>
+  <style type="text/css">
+  BODY {
+    font-family: Arial, Helvetica, serif;
+  }
+  DT {
+    font-weight:bold;
+  }
+  DD {
+    margin-bottom:1em;
+  }
+  EM {
+    font-family:non serif;
+    color:Blue;
+  }
+  .error  {
+    color:Red;
+    font-weight:bold;
+  }
+  .symbolic {
+    font-size:large;
+    padding-left:1em;
+  }
+  </style>
+</head>
+<body>
+
+<div style="width:50em">
+
+<h1>Tracking and Reasoning About Values</h1>
+
+<p>
+let us explore how to reason about values as we track them through the flow of a program.
+
+<p>
+let us see what patterns we see
+
+<p>
+from each possible source, and then total...
+<ul>
+  <li>min possible
+  <li>max possible
+  <li>eval expr
+</ul>
+
+<pre>
+0|  unsigned foo(unsigned i) {
+1|    if (i % 2)
+2|      i -= 6;
+3|    return i;
+4|  }
+</pre>
+
+<pre>
+i's min/max is UINT_MIN and UINT_MAX
+</pre>
+
+</div>
+
+</body>
+</html>

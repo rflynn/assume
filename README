@@ -6,18 +6,16 @@
 "Testing shows the presence, not the absence, of bugs."
                                 -- Edsger W. Dijkstra
 
-assume is to lint as a whitelist is to a blacklist.
-
 Goals
 
-  * Define formal method-style framework for high-level programming languages (HLL).
+  * Define formal method-style framework for high-level
+    programming languages (HLL).
   * Define popular HLL in terms of this framework.
-  * Build HLL lexers/parsers.
-  * Parse programs written in HLLs and validate against language definition.
-  * Detect ambiguous, non-canonical, defect-containing constructs.
-  * Optionally transform source code.
-  * Ultimate goal is to be able to detect potential defects in large codebases
-    written in the C programming language.
+  * Parse programs written in HLLs and validate against
+    language definition.
+  * Detect defective constructs.
+  * Ultimate analyze and improve large codebases written
+    in the C programming language.
   
 References
 
